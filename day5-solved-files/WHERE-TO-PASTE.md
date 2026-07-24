@@ -4,11 +4,20 @@ Day 5 is the security day — you turn the permissive Day-1 filter chain
 into a real JWT + RBAC setup, and you flesh out the four REST
 controllers behind it.
 
-**What this folder ships (fully implemented, verified booting on JDK 21):**
+**How this folder works**
+
+The real `backend/` tree ships the three security files as starter
+stubs — method bodies do `throw new UnsupportedOperationException("…")`
+with a `TODO(TICKET-…)` comment above each. This folder contains
+**complete drop-in replacement files** for those three:
 
 - `JwtTokenProvider` — HS256 token generate/parse using jjwt 0.12.
 - `JwtAuthenticationFilter` — reads `Authorization: Bearer …`, parses the token, populates `SecurityContextHolder`.
 - `SecurityConfig` — stateless JWT filter chain with role-based matchers for `/v1/trades/**`, `/v1/recon/**`, `/v1/audit/**`, plus `@EnableMethodSecurity`.
+
+You can **overlay** the whole `backend/` subtree in one shot, or
+**open each file** in this folder side-by-side with the starter to
+read the diff first.
 
 **What is deliberately left as your exercise (TODOs still open in your own code):**
 

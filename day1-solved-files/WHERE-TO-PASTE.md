@@ -5,6 +5,21 @@ file you touched today (Liquibase migrations for partitioning + the
 audit-log fix), plus a couple of small backend tweaks. Copy them into
 your project, boot the app, and watch the migrations do their thing.
 
+**How this folder works**
+
+The real `backend/` tree ships with Day-1 files as starter versions —
+the Liquibase changelogs have placeholder single-partition changesets,
+`application.yml` is missing the `server.port` override, and the
+`SecurityConfig` still has `TODO(TICKET-…)` markers where JWT will
+plug in on Day 5. This folder contains **complete drop-in replacement
+files** for the Day-1 scope. You can:
+
+- **Overlay** the whole `backend/` subtree in one shot (fastest), or
+- **Open each file** in this folder side-by-side with the starter to
+  read the diff first, then copy the solved version over.
+
+Both flows land at the same result.
+
 **In this file you'll find:**
 
 1. A one-line command to drop the solved files into the right place.

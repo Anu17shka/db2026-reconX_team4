@@ -4,6 +4,22 @@ Day 8 is the second frontend day — a Vite + React SPA replacing the
 Day-7 static dashboard. Zero backend Java changes; all your work is in
 the `frontend/` folder.
 
+**How this folder works**
+
+The real `frontend/` tree ships with the components, hooks, contexts,
+services, and tests scaffolded — most function bodies are just a
+`// TODO(TICKET-…)` comment. This folder contains **complete drop-in
+replacement files** — every TODO is filled in, every hook does what
+its ticket says, the API service wires all endpoints, and the
+`DataTable` test asserts real behaviour. You can:
+
+- **Overlay** the whole `frontend/` subtree in one shot (fastest), or
+- **Open each file** in this folder side-by-side with the starter to
+  read the diff first, then copy the solved version over.
+
+Both flows land at the same result. `node_modules/` and `dist/` are
+not shipped — run `npm install` once after the overlay.
+
 **What this folder ships** (a snapshot of the current `frontend/` tree,
 excluding `node_modules/` and `dist/`):
 

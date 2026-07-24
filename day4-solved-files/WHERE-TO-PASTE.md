@@ -5,6 +5,20 @@ Day 4 is the persistence + web-plumbing day. You wired the JPA
 gave the app a proper Swagger doc, a real DB health indicator,
 and RFC-7807 `ProblemDetail` responses for every domain exception.
 
+**How this folder works**
+
+The real `backend/` tree ships with Day-4 methods as `TODO(TICKET-…)`
+comments whose bodies do `throw new UnsupportedOperationException("…")`.
+This folder contains **complete drop-in replacement files** — every
+TODO is filled in and every stubbed method has a real body. You can
+either:
+
+- **Overlay** the whole `backend/` subtree in one shot (fastest), or
+- **Open each file** in this folder side-by-side with the starter to
+  read the diff first, then copy the solved version over.
+
+Both flows land at the same result.
+
 **In this file:**
 
 1. One-line copy command.

@@ -5,10 +5,19 @@ can actually reason about — cache hits on the hot symbol-lookup path,
 and Micrometer metrics wired to `/actuator/prometheus` so Grafana can
 scrape them.
 
-**What this folder ships:**
+**How this folder works**
 
-- `TradeMetrics.java` — two 1-line fillers on the Micrometer instruments (the Counter and DistributionSummary registrations were already in place).
+The real `backend/` tree ships these two files as starter stubs — one
+still-open `TODO(TICKET-…)` on `TradeMetrics` and one on
+`InstrumentService`. This folder contains **complete drop-in
+replacement files** for both:
+
+- `TradeMetrics.java` — Micrometer Counter, DistributionSummary, and polled Gauge registrations plus the two increment/record helpers.
 - `InstrumentService.java` — the `findBySymbol` body behind `@Cacheable("instruments")`.
+
+You can **overlay** the whole `backend/` subtree in one shot, or
+**open each file** in this folder side-by-side with the starter to
+read the diff first.
 
 **In this file:**
 
