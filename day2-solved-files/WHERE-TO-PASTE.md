@@ -6,6 +6,21 @@ classes, `Money` and `TradeRef` value objects, a `TradeFactory`, and the
 `ReconciliationRule` enum with per-constant behaviour. This folder has
 the finished versions of every file you needed to touch.
 
+**How this folder works**
+
+The real `backend/` tree ships with Day-2 methods as `TODO(TICKET-…)`
+comments whose bodies do `throw new UnsupportedOperationException("…")`,
+and the Day-2 tests sit at `fail("TICKET-… not implemented yet")`. This
+folder contains **complete drop-in replacement files** — every TODO is
+filled in, every stubbed method has a real body, every `fail(...)` is
+a real assertion. You can either:
+
+- **Overlay** the whole `backend/` subtree in one shot (fastest), or
+- **Open each file** in this folder side-by-side with the starter to
+  read the diff first, then copy the solved version over.
+
+Both flows land at the same result.
+
 **In this file you'll find:**
 
 1. A one-line command to drop the solved files into your project.
@@ -65,6 +80,8 @@ grep for the TODO markers and confirm they are gone:
 | 5 | `backend/src/main/java/com/dbtraining/reconx/model/DerivativeTrade.java`  | same path | ADV022 + ADV028 + ADV030 |
 | 6 | `backend/src/main/java/com/dbtraining/reconx/model/TradeFactory.java`     | same path | ADV023 |
 | 7 | `backend/src/main/java/com/dbtraining/reconx/model/ReconciliationRule.java` | same path | ADV026 |
+| 8 | `backend/src/test/java/com/dbtraining/reconx/model/EquityTradeTest.java`  | same path | ADV019 + ADV028 (test assertions) |
+| 9 | `backend/src/test/java/com/dbtraining/reconx/model/ReconciliationRuleTest.java` | same path | ADV026 (parameterized assertions) |
 
 ---
 

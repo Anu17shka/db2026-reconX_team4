@@ -4,8 +4,14 @@ Day 7 is your frontend day. Zero backend Java changes — everything
 happens in the `static-dashboard/` folder at the project root (HTML +
 CSS + vanilla JS talking to the backend over `fetch` and SSE).
 
-**What this folder ships** (a snapshot of the current `static-dashboard/`
-tree — overlay with the command in Quick Start):
+**How this folder works**
+
+The real `static-dashboard/` tree at the project root ships the same
+files as reference implementations. This folder contains the
+**complete solved versions** — you can copy them straight over if
+yours drifted, or diff against yours to compare approaches.
+
+**What this folder ships:**
 
 - `static-dashboard/dashboard.html`
 - `static-dashboard/css/style.css`

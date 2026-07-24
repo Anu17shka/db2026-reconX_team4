@@ -5,6 +5,20 @@ Welcome to Day 3 — the streams-and-tests day. You'll fill out the
 `TradeAnalyticsService` full of Collectors, and real assertions for the
 `ReconciliationEngineTest` that were sitting as `fail(...)` placeholders.
 
+**How this folder works**
+
+The real `backend/` tree ships with Day-3 methods as `TODO(TICKET-…)`
+comments whose bodies do `throw new UnsupportedOperationException("…")`,
+and the Day-3 tests sit at `fail("TICKET-… not implemented yet")`. This
+folder contains **complete drop-in replacement files** — every TODO is
+filled in, every `fail(...)` is a real assertion. You can either:
+
+- **Overlay** the whole `backend/` subtree in one shot (fastest), or
+- **Open each file** in this folder side-by-side with the starter to
+  read the diff first, then copy the solved version over.
+
+Both flows land at the same result.
+
 **In this file you'll find:**
 
 1. A one-line command to drop the solved files into your project.
@@ -31,6 +45,10 @@ so you can copy the whole `backend/` tree over the top of the real
 # From the project root — one-shot overlay:
 cp -R day3-solved-files/backend/ backend/
 ```
+
+That command replaces exactly three files in `backend/` (the ones
+listed in the "File-by-file map" below). Every other file in your
+`backend/` tree is left alone.
 
 Then jump to **"Run the project"** below.
 

@@ -4,6 +4,15 @@ Day 10 is release day. You put the whole stack in containers, wire it
 to Prometheus + Grafana, gate CI on coverage + static analysis + a k6
 load test, take screenshots for the demo deck, and tag `v1.0.0`.
 
+**How this folder works**
+
+Day 10 is about infrastructure files (Dockerfiles, compose, monitoring
+YAML/JSON) — no `TODO(TICKET-…)` markers to fill in. This folder
+contains **complete drop-in versions** of every infra file the day
+needs. Overlay them into the project root with the targeted `cp`
+commands in Quick Start below; each file lands next to (or replaces)
+its counterpart in the real tree.
+
 **What this folder ships** (a snapshot of the current infra + release
 files at their real project-root paths):
 
