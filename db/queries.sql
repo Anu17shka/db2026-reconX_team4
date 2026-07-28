@@ -14,8 +14,13 @@ ORDER BY t.trade_date DESC, t.instrument_id;
 
 
 -- ============================================================================
--- TICKET-ADV011 — Recursive CTE: trade lifecycle (execution -> settlement
---                -> recon_break -> resolution)
+-- TICKET-ADV011 — Recursive CTE: trade lifecycle rollup (5 stages)
+--                EXECUTION -> CONFIRMATION -> SETTLEMENT -> RECON_BREAK -> RESOLUTION
+--
+-- Each recursive step uses a LATERAL join so it naturally stops for a trade
+-- once no row exists for the next stage — e.g. a cleanly-matched trade with
+-- no recon_breaks row simply terminates at SETTLED (step 3), it does not
+-- error or force a synthetic RECON_BREAK row.
 -- ============================================================================
 WITH RECURSIVE trade_lifecycle AS (
     -- anchor: every trade in its execution state
@@ -39,13 +44,33 @@ WITH RECURSIVE trade_lifecycle AS (
         CASE tl.step
             WHEN 1 THEN 'CONFIRMED'
             WHEN 2 THEN 'SETTLED'
-            WHEN 3 THEN 'RECONCILED'
+            WHEN 3 THEN 'RECON_BREAK'
+            WHEN 4 THEN 'RESOLVED'
         END                                          AS state,
-        s.settlement_date::timestamp                  AS at_ts,
-        s.status                                      AS detail
+        next_event.at_ts,
+        next_event.detail
     FROM trade_lifecycle tl
-    JOIN settlements s ON s.trade_id = tl.trade_id
-    WHERE tl.step < 4
+    JOIN LATERAL (
+        -- steps 1->2 and 2->3: reuse the settlement row (CONFIRMED, then SETTLED)
+        SELECT s.settlement_date::timestamp AS at_ts, s.status AS detail
+        FROM settlements s
+        WHERE s.trade_id = tl.trade_id AND tl.step IN (1, 2)
+
+        UNION ALL
+
+        -- step 3->4: an open (or resolved) recon break was raised against this trade
+        SELECT rb.detected_at, rb.discrepancy_type
+        FROM recon_breaks rb
+        WHERE rb.trade_id = tl.trade_id AND tl.step = 3
+
+        UNION ALL
+
+        -- step 4->5: the break was resolved; no row here leaves the trade at RECON_BREAK
+        SELECT rb.resolved_at, rb.resolution_note
+        FROM recon_breaks rb
+        WHERE rb.trade_id = tl.trade_id AND tl.step = 4 AND rb.resolved_at IS NOT NULL
+    ) AS next_event ON TRUE
+    WHERE tl.step < 5
 )
 SELECT * FROM trade_lifecycle
 ORDER BY trade_id, step;
