@@ -5,5 +5,6 @@ com\dbtraining\reconx\model\DerivativeTradeTest.class
 com\dbtraining\reconx\model\MoneyTest.class
 com\dbtraining\reconx\model\BondTradeTest.class
 com\dbtraining\reconx\model\FXTradeTest.class
+com\dbtraining\reconx\dto\TradeRequestValidationTest.class
 com\dbtraining\reconx\model\EquityTradeTest.class
 com\dbtraining\reconx\model\TradeEqualityTest.class
