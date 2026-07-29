@@ -1,10 +1,13 @@
 com\dbtraining\reconx\model\ReconciliationRuleTest.class
+com\dbtraining\reconx\model\TradeToStringTest.class
+com\dbtraining\reconx\model\TradeTypeOrderingTest.class
+com\dbtraining\reconx\model\MoneyTest.class
+com\dbtraining\reconx\model\BondTradeTest.class
+com\dbtraining\reconx\model\TradeEqualityTest.class
 com\dbtraining\reconx\model\TradeRefTest.class
 com\dbtraining\reconx\service\ReconciliationEngineTest.class
 com\dbtraining\reconx\model\DerivativeTradeTest.class
-com\dbtraining\reconx\model\MoneyTest.class
-com\dbtraining\reconx\model\BondTradeTest.class
 com\dbtraining\reconx\model\FXTradeTest.class
 com\dbtraining\reconx\dto\TradeRequestValidationTest.class
 com\dbtraining\reconx\model\EquityTradeTest.class
-com\dbtraining\reconx\model\TradeEqualityTest.class
+com\dbtraining\reconx\model\TradeFactoryTest.class
