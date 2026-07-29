@@ -66,6 +66,8 @@ public final class BondTrade implements TradeType {
     }
 
     @Override public String toString() {
+
+        // NOTE: counterpartyId is intentionally omitted to avoid exposing internal data.
         return "BondTrade[ref=%s, isin=%s, face=%s %s, coupon=%s, maturity=%s, side=%s]"
                 .formatted(tradeRef, isin, faceValue, currency.getCurrencyCode(),
                         couponRate, maturityDate, side);

@@ -73,12 +73,40 @@ public final class EquityTrade implements TradeType {
         return tradeRef.hashCode();
     }
 
-    @Override
-    public String toString() {
-        return "EquityTrade[ref=%s, symbol=%s, qty=%s, price=%s %s, side=%s]"
-                .formatted(tradeRef, instrumentSymbol, quantity, price,
-                        currency.getCurrencyCode(), side);
-    }
+    // @Override
+    // public String toString() {
+    //     return "EquityTrade[ref=%s, symbol=%s, qty=%s, price=%s %s, side=%s]"
+    //             .formatted(tradeRef, instrumentSymbol, quantity, price,
+    //                     currency.getCurrencyCode(), side);
+    // }
+
+//     @Override
+// public String toString() {
+//     // NOTE: counterpartyId is intentionally omitted to avoid exposing internal data.
+//     return "EquityTrade[ref=%s, symbol=%s, qty=%s, price=%s %s, side=%s]"
+//             .formatted(
+//                     tradeRef,
+//                     instrumentSymbol,
+//                     quantity,
+//                     price,
+//                     currency.getCurrencyCode(),
+//                     side
+//             );
+// }
+
+@Override
+public String toString() {
+    // NOTE: counterpartyId is intentionally omitted to avoid exposing internal data.
+    return "EquityTrade[ref=%s, symbol=%s, qty=%s, price=%s %s, side=%s]"
+            .formatted(
+                    tradeRef,
+                    instrumentSymbol,
+                    quantity.toPlainString(),
+                    price.toPlainString(),
+                    currency.getCurrencyCode(),
+                    side
+            );
+}
 
     /** Fluent builder. Required fields validated in {@link #build()}. */
     public static final class Builder {

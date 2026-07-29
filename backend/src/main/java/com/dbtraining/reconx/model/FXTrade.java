@@ -66,11 +66,26 @@ public final class FXTrade implements TradeType {
         return tradeRef.hashCode();
     }
 
+    // @Override public String toString() {
+    //     // NOTE: counterpartyId is intentionally omitted to avoid exposing internal data.
+    //     return "FXTrade[ref=%s, %s/%s, notional=%s %s, rate=%s, side=%s]"
+    //             .formatted(tradeRef, ccy1.getCurrencyCode(), ccy2.getCurrencyCode(),
+    //                     notionalCcy1, ccy1.getCurrencyCode(), fxRate, side);
+    // }
+
     @Override public String toString() {
-        return "FXTrade[ref=%s, %s/%s, notional=%s %s, rate=%s, side=%s]"
-                .formatted(tradeRef, ccy1.getCurrencyCode(), ccy2.getCurrencyCode(),
-                        notionalCcy1, ccy1.getCurrencyCode(), fxRate, side);
-    }
+    // NOTE: counterpartyId is intentionally omitted to avoid exposing internal data.
+    return "FXTrade[ref=%s, %s/%s, notional=%s %s, rate=%s, side=%s]"
+            .formatted(
+                tradeRef,
+                ccy1.getCurrencyCode(),
+                ccy2.getCurrencyCode(),
+                notionalCcy1.toPlainString(),
+                ccy1.getCurrencyCode(),
+                fxRate.toPlainString(),
+                side
+            );
+}
 
     public static final class Builder {
         private TradeRef tradeRef;
