@@ -40,8 +40,8 @@ public final class TradeFactory {
         return EquityTrade.builder()
                 .tradeRef(TradeRef.of((String) p.get("tradeRef")))
                 .instrumentSymbol((String) p.get("symbol"))
-                .quantity(new BigDecimal(p.get("quantity").toString()))
-                .price(new BigDecimal(p.get("price").toString()))
+                .quantity(bigDecimal(p, "quantity"))
+                .price(bigDecimal(p, "price"))
                 .currency((String) p.get("currency"))
                 .side(Side.valueOf((String) p.get("side")))
                 .tradeDate(LocalDate.parse((String) p.get("tradeDate")))
@@ -54,8 +54,8 @@ public final class TradeFactory {
                 .tradeRef(TradeRef.of((String) p.get("tradeRef")))
                 .ccy1((String) p.get("ccy1"))
                 .ccy2((String) p.get("ccy2"))
-                .notionalCcy1(new BigDecimal(p.get("notionalCcy1").toString()))
-                .fxRate(new BigDecimal(p.get("fxRate").toString()))
+                .notionalCcy1(bigDecimal(p, "notionalCcy1"))
+                .fxRate(bigDecimal(p, "fxRate"))
                 .side(Side.valueOf((String) p.get("side")))
                 .tradeDate(LocalDate.parse((String) p.get("tradeDate")))
                 .counterpartyId(((Number) p.get("counterpartyId")).longValue())
@@ -66,8 +66,8 @@ public final class TradeFactory {
         return BondTrade.builder()
                 .tradeRef(TradeRef.of((String) p.get("tradeRef")))
                 .isin((String) p.get("isin"))
-                .faceValue(new BigDecimal(p.get("faceValue").toString()))
-                .couponRate(new BigDecimal(p.get("couponRate").toString()))
+                .faceValue(bigDecimal(p, "faceValue"))
+                .couponRate(bigDecimal(p, "couponRate"))
                 .maturityDate(LocalDate.parse((String) p.get("maturityDate")))
                 .currency((String) p.get("currency"))
                 .side(Side.valueOf((String) p.get("side")))
@@ -80,8 +80,8 @@ public final class TradeFactory {
         return DerivativeTrade.builder()
                 .tradeRef(TradeRef.of((String) p.get("tradeRef")))
                 .underlying((String) p.get("underlying"))
-                .strike(new BigDecimal(p.get("strike").toString()))
-                .quantity(new BigDecimal(p.get("quantity").toString()))
+                .strike(bigDecimal(p, "strike"))
+                .quantity(bigDecimal(p, "quantity"))
                 .expiry(LocalDate.parse((String) p.get("expiry")))
                 .optionType(DerivativeTrade.OptionType.valueOf((String) p.get("optionType")))
                 .currency((String) p.get("currency"))
@@ -89,5 +89,15 @@ public final class TradeFactory {
                 .tradeDate(LocalDate.parse((String) p.get("tradeDate")))
                 .counterpartyId(((Number) p.get("counterpartyId")).longValue())
                 .build();
+    }
+
+    /**
+     * Returns null (rather than throwing a field-less NPE from toString()) when
+     * the key is absent, so a missing numeric field surfaces as the builder's
+     * own named requireNonNull(field, "fieldName") instead of an anonymous NPE.
+     */
+    private static BigDecimal bigDecimal(Map<String, Object> p, String key) {
+        Object v = p.get(key);
+        return v == null ? null : new BigDecimal(v.toString());
     }
 }
