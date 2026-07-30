@@ -1,3 +1,4 @@
+com\dbtraining\reconx\repository\ReconResultRepository.class
 com\dbtraining\reconx\service\TradeAnalyticsService$NotionalSummary.class
 com\dbtraining\reconx\dto\ReconRunRequest.class
 com\dbtraining\reconx\controller\AuditController.class
@@ -23,6 +24,7 @@ com\dbtraining\reconx\observability\DatabaseHealthIndicator.class
 com\dbtraining\reconx\security\JwtTokenProvider.class
 com\dbtraining\reconx\kafka\ReconciliationConsumer.class
 com\dbtraining\reconx\model\BondTrade$Builder.class
+com\dbtraining\reconx\service\ReconciliationService.class
 com\dbtraining\reconx\service\ReconSummary.class
 com\dbtraining\reconx\controller\TradeController.class
 com\dbtraining\reconx\model\EquityTrade.class
