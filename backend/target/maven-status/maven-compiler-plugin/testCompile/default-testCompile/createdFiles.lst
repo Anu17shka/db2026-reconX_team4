@@ -1,4 +1,5 @@
 com\dbtraining\reconx\model\ReconciliationRuleTest.class
+com\dbtraining\reconx\service\ReconSummaryCollectorTest.class
 com\dbtraining\reconx\model\TradeToStringTest.class
 com\dbtraining\reconx\model\TradeTypeOrderingTest.class
 com\dbtraining\reconx\model\MoneyTest.class
