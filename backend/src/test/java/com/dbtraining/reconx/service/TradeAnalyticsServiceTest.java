@@ -14,13 +14,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -31,15 +24,11 @@ class TradeAnalyticsServiceTest {
             new TradeAnalyticsService();
 
 
-    /**
-     * TICKET-ADV035
-     * VWAP should match hand calculated value.
-     *
-     * VWAP =
-     * (100*10 + 110*20) / (10+20)
-     *
-     * = 106.666667
-     */
+    // =======================
+    // TICKET-ADV035 VWAP TESTS
+    // =======================
+
+
     @Test
     void vwap_matchesHandComputedValue() {
 
@@ -61,14 +50,8 @@ class TradeAnalyticsServiceTest {
 
 
 
-    /**
-     * TICKET-ADV035
-     * Serial and parallel calculations
-     * should produce identical BigDecimal results.
-     */
     @Test
     void vwap_serialAndParallelProduceSameResult() {
-
 
         List<EquityTrade> trades = List.of(
                 equity("MSFT", "200", "5"),
@@ -77,13 +60,11 @@ class TradeAnalyticsServiceTest {
         );
 
 
-        // Normal stream execution
         Map<String, BigDecimal> serial =
                 service.vwapByInstrument(trades);
 
 
 
-        // Parallel stream execution
         Map<String, BigDecimal> parallel =
                 trades.parallelStream()
                         .collect(
@@ -109,10 +90,6 @@ class TradeAnalyticsServiceTest {
 
 
 
-    /**
-     * TICKET-ADV035
-     * Empty input should not throw ArithmeticException.
-     */
     @Test
     void vwap_emptyInput_returnsEmptyMap() {
 
@@ -128,7 +105,6 @@ class TradeAnalyticsServiceTest {
 
     private BigDecimal calculateVwap(
             List<EquityTrade> trades) {
-
 
         BigDecimal totalPxQty =
                 BigDecimal.ZERO;
@@ -166,10 +142,151 @@ class TradeAnalyticsServiceTest {
 
 
 
+    // ==========================
+    // TICKET-ADV034 NOTIONAL TEST
+    // ==========================
+
+
+    @Test
+    void shouldGroupTradesByCounterparty() {
+
+        List<EquityTrade> trades = List.of(
+
+                equityWithCounterparty(
+                        "AAPL",
+                        "10",
+                        "100",
+                        100L
+                ),
+
+                equityWithCounterparty(
+                        "MSFT",
+                        "20",
+                        "100",
+                        100L
+                ),
+
+                equityWithCounterparty(
+                        "GOOG",
+                        "5",
+                        "100",
+                        200L
+                )
+        );
+
+
+        Map<Long, TradeAnalyticsService.NotionalSummary> result =
+                service.notionalByCounterparty(trades);
+
+
+        assertEquals(2, result.size());
+
+
+        assertEquals(
+                2,
+                result.get(100L).count()
+        );
+
+
+        assertEquals(
+                new BigDecimal("3000"),
+                result.get(100L).total()
+        );
+
+
+        assertEquals(
+                1,
+                result.get(200L).count()
+        );
+
+
+        assertEquals(
+                new BigDecimal("500"),
+                result.get(200L).total()
+        );
+    }
+
+
+
+    // ======================
+    // TICKET-ADV036 P&L TEST
+    // ======================
+
+
+    @Test
+    void pnlByInstrumentShouldCalculateProfitAndLoss() {
+
+
+        List<EquityTrade> trades = List.of(
+
+                equityWithSide(
+                        "AAPL",
+                        "10",
+                        "100",
+                        Side.BUY
+                ),
+
+                equityWithSide(
+                        "AAPL",
+                        "5",
+                        "100",
+                        Side.SELL
+                ),
+
+                equityWithSide(
+                        "MSFT",
+                        "20",
+                        "50",
+                        Side.SELL
+                )
+        );
+
+
+        Map<String, BigDecimal> result =
+                service.pnlByInstrument(trades);
+
+
+        assertEquals(
+                new BigDecimal("-500"),
+                result.get("AAPL")
+        );
+
+
+        assertEquals(
+                new BigDecimal("1000"),
+                result.get("MSFT")
+        );
+    }
+
+
+
+
+    // ======================
+    // HELPER METHODS
+    // ======================
+
+
     private EquityTrade equity(
             String symbol,
             String price,
             String quantity) {
+
+
+        return equityWithCounterparty(
+                symbol,
+                quantity,
+                price,
+                1L
+        );
+    }
+
+
+
+    private EquityTrade equityWithCounterparty(
+            String symbol,
+            String quantity,
+            String price,
+            long counterpartyId) {
 
 
         return EquityTrade.builder()
@@ -202,147 +319,52 @@ class TradeAnalyticsServiceTest {
                         )
                 )
 
-                .counterpartyId(1L)
+                .counterpartyId(counterpartyId)
 
                 .build();
-    // ADV034 Test
-    @Test
-    void shouldGroupTradesByCounterparty() {
-
-        TradeAnalyticsService service =
-                new TradeAnalyticsService();
-
-
-        List<EquityTrade> trades = List.of(
-
-                EquityTrade.builder()
-                        .tradeRef(new TradeRef("APP-20260729-0001"))
-                        .instrumentSymbol("AAPL")
-                        .quantity(new BigDecimal("10"))
-                        .price(new BigDecimal("100"))
-                        .currency("USD")
-                        .side(Side.BUY)
-                        .tradeDate(LocalDate.of(2026, 7, 29))
-                        .counterpartyId(100L)
-                        .build(),
-
-                EquityTrade.builder()
-                        .tradeRef(new TradeRef("MSF-20260729-0002"))
-                        .instrumentSymbol("MSFT")
-                        .quantity(new BigDecimal("20"))
-                        .price(new BigDecimal("100"))
-                        .currency("USD")
-                        .side(Side.BUY)
-                        .tradeDate(LocalDate.of(2026, 7, 29))
-                        .counterpartyId(100L)
-                        .build(),
-
-                EquityTrade.builder()
-                        .tradeRef(new TradeRef("GOO-20260729-0003"))
-                        .instrumentSymbol("GOOG")
-                        .quantity(new BigDecimal("5"))
-                        .price(new BigDecimal("100"))
-                        .currency("USD")
-                        .side(Side.SELL)
-                        .tradeDate(LocalDate.of(2026, 7, 29))
-                        .counterpartyId(200L)
-                        .build()
-        );
-
-
-        Map<Long, TradeAnalyticsService.NotionalSummary> result =
-                service.notionalByCounterparty(trades);
-
-
-        assertEquals(2, result.size());
-
-        assertEquals(
-                2,
-                result.get(100L).count()
-        );
-
-        assertEquals(
-                new BigDecimal("3000"),
-                result.get(100L).total()
-        );
-
-
-        assertEquals(
-                1,
-                result.get(200L).count()
-        );
-
-        assertEquals(
-                new BigDecimal("500"),
-                result.get(200L).total()
-        );
     }
 
 
 
-    // ADV036 Test
-    @Test
-    void pnlByInstrumentShouldCalculateProfitAndLoss() {
-
-        TradeAnalyticsService service =
-                new TradeAnalyticsService();
-
-
-        List<EquityTrade> trades = List.of(
-
-                // BUY AAPL = -(10*100) = -1000
-                EquityTrade.builder()
-                        .tradeRef(new TradeRef("APP-20260729-0004"))
-                        .instrumentSymbol("AAPL")
-                        .quantity(new BigDecimal("10"))
-                        .price(new BigDecimal("100"))
-                        .currency("USD")
-                        .side(Side.BUY)
-                        .tradeDate(LocalDate.of(2026, 7, 29))
-                        .counterpartyId(100L)
-                        .build(),
+    private EquityTrade equityWithSide(
+            String symbol,
+            String quantity,
+            String price,
+            Side side) {
 
 
-                // SELL AAPL = +(5*100) = 500
-                EquityTrade.builder()
-                        .tradeRef(new TradeRef("APP-20260729-0005"))
-                        .instrumentSymbol("AAPL")
-                        .quantity(new BigDecimal("5"))
-                        .price(new BigDecimal("100"))
-                        .currency("USD")
-                        .side(Side.SELL)
-                        .tradeDate(LocalDate.of(2026, 7, 29))
-                        .counterpartyId(100L)
-                        .build(),
+        return EquityTrade.builder()
 
+                .tradeRef(
+                        TradeRef.of(
+                                "TRD-20260729-0002"
+                        )
+                )
 
-                // SELL MSFT = +(20*50) = 1000
-                EquityTrade.builder()
-                        .tradeRef(new TradeRef("MSF-20260729-0006"))
-                        .instrumentSymbol("MSFT")
-                        .quantity(new BigDecimal("20"))
-                        .price(new BigDecimal("50"))
-                        .currency("USD")
-                        .side(Side.SELL)
-                        .tradeDate(LocalDate.of(2026, 7, 29))
-                        .counterpartyId(200L)
-                        .build()
-        );
+                .instrumentSymbol(symbol)
 
+                .quantity(
+                        new BigDecimal(quantity)
+                )
 
-        Map<String, BigDecimal> result =
-                service.pnlByInstrument(trades);
+                .price(
+                        new BigDecimal(price)
+                )
 
+                .currency("USD")
 
-        assertEquals(
-                new BigDecimal("-500"),
-                result.get("AAPL")
-        );
+                .side(side)
 
+                .tradeDate(
+                        LocalDate.of(
+                                2026,
+                                7,
+                                29
+                        )
+                )
 
-        assertEquals(
-                new BigDecimal("1000"),
-                result.get("MSFT")
-        );
+                .counterpartyId(1L)
+
+                .build();
     }
 }
