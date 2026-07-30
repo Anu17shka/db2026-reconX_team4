@@ -55,5 +55,7 @@ C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\security\SecurityConfig.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\InstrumentService.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\ReconciliationEngine.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\ReconSummary.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\ReconSummaryCollector.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\TradeAnalyticsService.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\TradeService.java
