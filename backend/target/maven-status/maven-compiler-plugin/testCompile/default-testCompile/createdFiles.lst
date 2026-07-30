@@ -7,6 +7,7 @@ com\dbtraining\reconx\model\TradeEqualityTest.class
 com\dbtraining\reconx\model\TradeRefTest.class
 com\dbtraining\reconx\service\ReconciliationEngineTest.class
 com\dbtraining\reconx\model\DerivativeTradeTest.class
+com\dbtraining\reconx\service\TradeAnalyticsServiceTest.class
 com\dbtraining\reconx\model\FXTradeTest.class
 com\dbtraining\reconx\dto\TradeRequestValidationTest.class
 com\dbtraining\reconx\model\EquityTradeTest.class
