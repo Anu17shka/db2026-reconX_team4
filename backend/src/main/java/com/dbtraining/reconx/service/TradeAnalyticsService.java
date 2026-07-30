@@ -1,5 +1,7 @@
 package com.dbtraining.reconx.service;
 
+import com.dbtraining.reconx.model.EquityTrade;
+import com.dbtraining.reconx.model.Side;
 import com.dbtraining.reconx.model.TradeType;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +13,10 @@ import java.util.stream.Collectors;
 @Service
 public class TradeAnalyticsService {
 
-    public Map<Long, NotionalSummary> notionalByCounterparty(List<? extends TradeType> trades) {
+
+    // ADV034 - Notional summary by counterparty
+    public Map<Long, NotionalSummary> notionalByCounterparty(
+            List<? extends TradeType> trades) {
 
         return trades.stream()
                 .collect(Collectors.groupingBy(
@@ -26,6 +31,38 @@ public class TradeAnalyticsService {
                                 )
                         )
                 ));
+    }
+
+
+    // ADV036 - P&L grouped by instrument
+    public Map<String, BigDecimal> pnlByInstrument(
+            List<EquityTrade> equityTrades) {
+
+        return equityTrades.stream()
+                .collect(Collectors.groupingBy(
+                        EquityTrade::instrumentSymbol,
+                        Collectors.mapping(
+                                this::pnl,
+                                Collectors.reducing(
+                                        BigDecimal.ZERO,
+                                        BigDecimal::add
+                                )
+                        )
+                ));
+    }
+
+
+    // ADV036 - Calculate trade P&L
+    private BigDecimal pnl(EquityTrade t) {
+
+        BigDecimal value = t.price()
+                .multiply(t.quantity());
+
+        if (t.side() == Side.SELL) {
+            return value;
+        }
+
+        return value.negate();
     }
 
 
@@ -48,5 +85,9 @@ public class TradeAnalyticsService {
     }
 
 
-    public record NotionalSummary(long count, BigDecimal total) {}
+    public record NotionalSummary(
+            long count,
+            BigDecimal total
+    ) {
+    }
 }
