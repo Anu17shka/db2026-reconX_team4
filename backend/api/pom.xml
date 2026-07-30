@@ -84,6 +84,15 @@
     </dependency>
 
 
+    <!-- Bean Validation (missing after the ADV048 split; TradeRequest's
+         jakarta.validation annotations need Hibernate Validator on the
+         classpath, not just the jakarta.validation-api that web pulls in) -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+
     <!-- Spring Actuator -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -152,7 +161,59 @@
     </dependency>
 
 
+    <!-- Liquibase + DB drivers (missing after the ADV048 multi-module split;
+         without these the app compiles but cannot boot: no migration
+         runner, no JDBC driver for either dev/H2 or uat-prod/Postgres). -->
+    <dependency>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-core</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+
+
+    <!-- Test (also missing after the split; without this none of the 16
+         test classes moved from backend/src/test compile) -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+
 </dependencies>
+
+
+<!-- MapStruct annotation processor (missing after the ADV048 multi-module
+     split; without this, TradeMapperImpl is never generated and every bean
+     that depends on TradeMapper fails to wire up at boot). -->
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+                <annotationProcessorPaths>
+                    <path>
+                        <groupId>org.mapstruct</groupId>
+                        <artifactId>mapstruct-processor</artifactId>
+                        <version>${mapstruct.version}</version>
+                    </path>
+                </annotationProcessorPaths>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
 
 
 </project>
