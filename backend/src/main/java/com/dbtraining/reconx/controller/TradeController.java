@@ -17,6 +17,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -49,16 +50,23 @@ public class TradeController {
     @GetMapping
     @Operation(summary = "List trades — paginated, filterable, sortable")
     public PagedResponse<TradeResponse> list(
-            @RequestParam(required = false) LocalDate from,
-            @RequestParam(required = false) LocalDate to,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long counterpartyId,
-            @PageableDefault(size = 20, sort = "tradeDate", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "tradeDate", direction = Sort.Direction.DESC) 
+            Pageable pageable) {
         // TODO(TICKET-ADV063): delegate to service.list(from, to, status, counterpartyId, pageable)
         //   and wrap the resulting Page<Trade> via PagedResponse.from(page, mapper::toResponse).
         //   For Day 1 return an empty PagedResponse so the React grid renders
         //   "no trades match" while the JPA + Specifications work is still pending.
-        return new PagedResponse<>(List.of(), 0, 20, 0, 0);
+        return new PagedResponse<>(
+        List.of(),
+        pageable.getPageNumber(),
+        pageable.getPageSize(),
+        0,
+        0
+);
     }
 
     @PostMapping
