@@ -1,7 +1,9 @@
 # =============================================================================
-# TICKET-ADV049 — uat profile: PostgreSQL on docker-compose
+# TICKET-ADV049 — uat profile: PostgreSQL + Kafka
 # =============================================================================
+
 spring:
+
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:reconx}
     username: ${POSTGRES_USER:reconx_user}
@@ -10,10 +12,17 @@ spring:
     hikari:
       maximum-pool-size: 20
       connection-timeout: 5000
+
   jpa:
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate.jdbc.batch_size: 50
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    listener:
+      missing-topics-fatal: false
+
 
 logging:
   level:

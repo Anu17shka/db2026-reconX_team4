@@ -48,12 +48,17 @@ C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\repository\entity\Trade.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\repository\InstrumentRepository.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\repository\ReconBreakRepository.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\repository\ReconResultRepository.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\repository\TradeRepository.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\repository\TradeSpecification.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\repository\TradeSpecifications.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\security\JwtAuthenticationFilter.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\security\JwtTokenProvider.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\security\SecurityConfig.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\InstrumentService.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\ReconciliationEngine.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\ReconciliationService.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\ReconSummary.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\ReconSummaryCollector.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\TradeAnalyticsService.java
 C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\main\java\com\dbtraining\reconx\service\TradeService.java
