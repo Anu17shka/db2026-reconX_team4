@@ -1,0 +1,16 @@
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\dto\TradeRequestValidationTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\model\BondTradeTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\model\DerivativeTradeTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\model\EquityTradeTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\model\FXTradeTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\model\MoneyTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\model\ReconciliationRuleTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\model\TradeEqualityTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\model\TradeFactoryTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\model\TradeRefTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\model\TradeToStringTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\model\TradeTypeOrderingTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\service\ReconciliationEngineTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\service\ReconciliationServiceTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\service\ReconSummaryCollectorTest.java
+C:\Users\Admin\Desktop\db2026-reconX_team4\backend\src\test\java\com\dbtraining\reconx\service\TradeAnalyticsServiceTest.java
