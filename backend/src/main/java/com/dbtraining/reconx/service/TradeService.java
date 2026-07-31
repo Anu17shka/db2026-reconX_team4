@@ -1,5 +1,6 @@
 package com.dbtraining.reconx.service;
 
+import com.dbtraining.reconx.dto.TradeEvent;
 import com.dbtraining.reconx.dto.TradeRequest;
 import com.dbtraining.reconx.exception.DuplicateTradeRefException;
 import com.dbtraining.reconx.exception.TradeNotFoundException;
@@ -8,8 +9,9 @@ import com.dbtraining.reconx.observability.TradeMetrics;
 import com.dbtraining.reconx.repository.CounterpartyRepository;
 import com.dbtraining.reconx.repository.InstrumentRepository;
 import com.dbtraining.reconx.repository.TradeRepository;
+import com.dbtraining.reconx.repository.TradeSpecification;
 import com.dbtraining.reconx.repository.entity.Trade;
-import com.dbtraining.reconx.dto.TradeEvent;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,7 +22,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static com.dbtraining.reconx.repository.TradeSpecifications.*;
 
 /**
  * ============================================================================
@@ -43,11 +44,14 @@ public class TradeService {
     private final TradeEventProducer events;
     private final TradeMetrics metrics;
 
-    public TradeService(TradeRepository tradeRepo,
-                        CounterpartyRepository cpRepo,
-                        InstrumentRepository instRepo,
-                        TradeEventProducer events,
-                        TradeMetrics metrics) {
+
+    public TradeService(
+            TradeRepository tradeRepo,
+            CounterpartyRepository cpRepo,
+            InstrumentRepository instRepo,
+            TradeEventProducer events,
+            TradeMetrics metrics
+    ) {
         this.tradeRepo = tradeRepo;
         this.cpRepo = cpRepo;
         this.instRepo = instRepo;
@@ -55,40 +59,57 @@ public class TradeService {
         this.metrics = metrics;
     }
 
+
     public Trade create(TradeRequest req, String actor) {
-        // TODO(TICKET-ADV064): reject duplicate tradeRef via DuplicateTradeRefException,
-        //   build a new Trade with instrument + counterparty looked up from
-        //   their repos (throw TradeNotFoundException on miss), status = "PENDING",
-        //   save, then:
-        //     - metrics.incrementTradeCreated() + metrics.recordTradeValue(qty*price) — TICKET-ADV083
-        //     - events.publish(new TradeEvent(... TRADE_CREATED ... actor ...)) — TICKET-ADV129
+
         throw new UnsupportedOperationException("TICKET-ADV064");
     }
 
+
     public Trade update(Long id, TradeRequest req, String actor) {
-        // TODO(TICKET-ADV065): load by id (throw TradeNotFoundException if missing),
-        //   copy mutable fields from req, save, publish a TRADE_UPDATED event.
+
         throw new UnsupportedOperationException("TICKET-ADV065");
     }
 
+
     public Trade updateStatus(Long id, String status, String actor) {
-        // TODO(TICKET-ADV066): load, setStatus(status), save, publish TRADE_UPDATED
-        //   with the new status in the "after" slot of the event.
+
         throw new UnsupportedOperationException("TICKET-ADV066");
     }
 
+
     public void softDelete(Long id, String actor) {
-        // TODO(TICKET-ADV067): load, call t.softDelete() (sets deleted_at), save,
-        //   publish a TRADE_CANCELLED event.
+
         throw new UnsupportedOperationException("TICKET-ADV067");
     }
 
+
+    /**
+     * Dynamic trade search using JPA Specifications.
+     *
+     * @param from start trade date filter
+     * @param to end trade date filter
+     * @param status trade status filter
+     * @param counterpartyId counterparty filter
+     * @param pageable pagination information
+     * @return filtered paginated trades
+     */
     @Transactional(readOnly = true)
-    public Page<Trade> list(LocalDate from, LocalDate to, String status, Long counterpartyId, Pageable pageable) {
-        // TODO(TICKET-ADV055 + TICKET-ADV056): combine the static helpers from
-        //   TradeSpecifications (hasStatus, tradeDateBetween, hasCounterparty)
-        //   via Specification.where(...).and(...) and call
-        //   tradeRepo.findAll(spec, pageable). Until JPA is in place, throw.
-        throw new UnsupportedOperationException("TICKET-ADV055");
+    public Page<Trade> list(
+            LocalDate from,
+            LocalDate to,
+            String status,
+            Long counterpartyId,
+            Pageable pageable
+    ) {
+
+        Specification<Trade> spec =
+                Specification
+                        .where(TradeSpecification.tradeDateBetween(from, to))
+                        .and(TradeSpecification.hasStatus(status))
+                        .and(TradeSpecification.forCounterparty(counterpartyId));
+
+
+        return tradeRepo.findAll(spec, pageable);
     }
 }

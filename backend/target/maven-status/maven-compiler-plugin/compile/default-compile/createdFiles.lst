@@ -70,6 +70,7 @@ com\dbtraining\reconx\repository\entity\ReconBreak.class
 com\dbtraining\reconx\dto\TradeRequest.class
 com\dbtraining\reconx\repository\CounterpartyRepository.class
 com\dbtraining\reconx\service\ReconSummary$Builder.class
+com\dbtraining\reconx\repository\TradeSpecification.class
 com\dbtraining\reconx\service\ReconciliationEngine.class
 com\dbtraining\reconx\repository\entity\Counterparty.class
 com\dbtraining\reconx\service\TradeService.class
