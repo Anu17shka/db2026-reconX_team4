@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * ============================================================================
@@ -108,4 +109,22 @@ public class Trade {
     public void setPrice(BigDecimal v)        { this.price = v; }
     public void setTradeDate(LocalDate v)     { this.tradeDate = v; }
     public void setStatus(String v)           { this.status = v; }
+
+    /**
+     * TICKET-ADV050 — hand-written (no Lombok @Data): comparing every field
+     * on an entity walks lazy associations (counterparty, instrument) and
+     * triggers N+1 the moment a Trade lands in a HashSet. Identity by id
+     * only avoids that entirely.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Trade other)) return false;
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
