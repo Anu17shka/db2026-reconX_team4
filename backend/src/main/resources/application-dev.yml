@@ -44,3 +44,11 @@ springdoc:
 logging:
   level:
     com.dbtraining.reconx: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
