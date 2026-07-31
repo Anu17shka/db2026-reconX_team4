@@ -30,6 +30,13 @@ spring:
       hibernate.format_sql: true
       hibernate.jdbc.time_zone: UTC
 
+  # ADV049 — Liquibase owns the schema; data.sql/schema.sql-style init must
+  # never run (there isn't one, but this fails fast/explicitly rather than
+  # relying on Spring Boot's "embedded" default silently doing nothing).
+  sql:
+    init:
+      mode: never
+
   # ADV081-ADV082 — Caffeine cache config; per-cache spec overrides the global one.
   cache:
     cache-names: instruments,counterparties
@@ -101,7 +108,8 @@ logging:
   level:
     com.dbtraining.reconx: INFO
     org.springframework.web: INFO
-    org.hibernate.SQL: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
   pattern:
     correlation: "[%X{correlationId:-}] [%X{tradeRef:-}]"
 
