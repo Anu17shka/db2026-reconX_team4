@@ -1,31 +1,26 @@
 # =============================================================================
-# TICKET-ADV049 — dev profile: H2 in-memory + Kafka can be disabled if not running
+# TICKET-ADV049 — dev profile: PostgreSQL + Kafka disabled
 # =============================================================================
+
 spring:
-  
   h2:
     console:
       enabled: true
       path: /h2
-  
-  
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/reconx
-    username: reconx_user
-    password: reconx_pass
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:h2:mem:reconx;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;NON_KEYWORDS=USER
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
 
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-
-  # H2 doesn't ship a JSONB type — Liquibase preconditions in the changelog skip
-  # the JSONB GIN-index step on H2 (see 003-jsonb.xml).
-  
+    database-platform: org.hibernate.dialect.H2Dialect
 
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
     listener:
-      missing-topics-fatal: false   # don't blow up if Kafka isn't running locally
+      missing-topics-fatal: false
 
 logging:
   level:

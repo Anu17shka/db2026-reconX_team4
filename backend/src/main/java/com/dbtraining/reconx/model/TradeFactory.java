@@ -26,52 +26,78 @@ public final class TradeFactory {
 
     private TradeFactory() { }
 
-    /**
-     * TODO(TICKET-ADV023):
-     *   1. Parse assetClass string into TradeType.AssetClass enum (toUpperCase first).
-     *   2. switch on the enum and dispatch to the matching equity/fx/bond/derivative
-     *      helper below.
-     *   3. The switch must be exhaustive — every TradeType.AssetClass case handled.
-     */
     public static TradeType create(String assetClass, Map<String, Object> p) {
-        throw new UnsupportedOperationException("TICKET-ADV023");
+        TradeType.AssetClass ac = TradeType.AssetClass.valueOf(assetClass.toUpperCase());
+        return switch (ac) {
+            case EQUITY     -> equity(p);
+            case FX         -> fx(p);
+            case BOND       -> bond(p);
+            case DERIVATIVE -> derivative(p);
+        };
     }
 
-    /**
-     * TODO(TICKET-ADV023):
-     *   Build an EquityTrade from the map. Expected keys: tradeRef, symbol,
-     *   quantity, price, currency, side, tradeDate, counterpartyId.
-     */
     private static EquityTrade equity(Map<String, Object> p) {
-        throw new UnsupportedOperationException("TICKET-ADV023");
+        return EquityTrade.builder()
+                .tradeRef(TradeRef.of((String) p.get("tradeRef")))
+                .instrumentSymbol((String) p.get("symbol"))
+                .quantity(bigDecimal(p, "quantity"))
+                .price(bigDecimal(p, "price"))
+                .currency((String) p.get("currency"))
+                .side(Side.valueOf((String) p.get("side")))
+                .tradeDate(LocalDate.parse((String) p.get("tradeDate")))
+                .counterpartyId(((Number) p.get("counterpartyId")).longValue())
+                .build();
     }
 
-    /**
-     * TODO(TICKET-ADV023):
-     *   Build an FXTrade from the map. Expected keys: tradeRef, ccy1, ccy2,
-     *   notionalCcy1, fxRate, side, tradeDate, counterpartyId.
-     */
     private static FXTrade fx(Map<String, Object> p) {
-        throw new UnsupportedOperationException("TICKET-ADV023");
+        return FXTrade.builder()
+                .tradeRef(TradeRef.of((String) p.get("tradeRef")))
+                .ccy1((String) p.get("ccy1"))
+                .ccy2((String) p.get("ccy2"))
+                .notionalCcy1(bigDecimal(p, "notionalCcy1"))
+                .fxRate(bigDecimal(p, "fxRate"))
+                .side(Side.valueOf((String) p.get("side")))
+                .tradeDate(LocalDate.parse((String) p.get("tradeDate")))
+                .counterpartyId(((Number) p.get("counterpartyId")).longValue())
+                .build();
     }
 
-    /**
-     * TODO(TICKET-ADV023):
-     *   Build a BondTrade from the map. Expected keys: tradeRef, isin,
-     *   faceValue, couponRate, maturityDate, currency, side, tradeDate,
-     *   counterpartyId.
-     */
     private static BondTrade bond(Map<String, Object> p) {
-        throw new UnsupportedOperationException("TICKET-ADV023");
+        return BondTrade.builder()
+                .tradeRef(TradeRef.of((String) p.get("tradeRef")))
+                .isin((String) p.get("isin"))
+                .faceValue(bigDecimal(p, "faceValue"))
+                .couponRate(bigDecimal(p, "couponRate"))
+                .maturityDate(LocalDate.parse((String) p.get("maturityDate")))
+                .currency((String) p.get("currency"))
+                .side(Side.valueOf((String) p.get("side")))
+                .tradeDate(LocalDate.parse((String) p.get("tradeDate")))
+                .counterpartyId(((Number) p.get("counterpartyId")).longValue())
+                .build();
+    }
+
+    private static DerivativeTrade derivative(Map<String, Object> p) {
+        return DerivativeTrade.builder()
+                .tradeRef(TradeRef.of((String) p.get("tradeRef")))
+                .underlying((String) p.get("underlying"))
+                .strike(bigDecimal(p, "strike"))
+                .quantity(bigDecimal(p, "quantity"))
+                .expiry(LocalDate.parse((String) p.get("expiry")))
+                .optionType(DerivativeTrade.OptionType.valueOf((String) p.get("optionType")))
+                .currency((String) p.get("currency"))
+                .side(Side.valueOf((String) p.get("side")))
+                .tradeDate(LocalDate.parse((String) p.get("tradeDate")))
+                .counterpartyId(((Number) p.get("counterpartyId")).longValue())
+                .build();
     }
 
     /**
-     * TODO(TICKET-ADV023):
-     *   Build a DerivativeTrade from the map. Expected keys: tradeRef,
-     *   underlying, strike, quantity, expiry, optionType, currency, side,
-     *   tradeDate, counterpartyId.
+     * Returns null (rather than throwing a field-less NPE from toString()) when
+     * the key is absent, so a missing numeric field surfaces as the builder's
+     * own named requireNonNull(field, "fieldName") instead of an anonymous NPE.
      */
-    private static DerivativeTrade derivative(Map<String, Object> p) {
-        throw new UnsupportedOperationException("TICKET-ADV023");
+    private static BigDecimal bigDecimal(Map<String, Object> p, String key) {
+        Object v = p.get(key);
+        return v == null ? null : new BigDecimal(v.toString());
     }
 }
