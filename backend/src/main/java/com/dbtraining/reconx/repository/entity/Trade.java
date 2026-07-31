@@ -2,6 +2,8 @@ package com.dbtraining.reconx.repository.entity;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -33,7 +35,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "trades")
 @EntityListeners(AuditingEntityListener.class)
-// @org.hibernate.envers.Audited                  // re-enable when envers tables are migrated
+@Audited
 @SQLRestriction("deleted_at IS NULL")
 public class Trade {
 
@@ -44,12 +46,17 @@ public class Trade {
     @Column(name = "trade_ref", nullable = false, unique = true, length = 30)
     private String tradeRef;
 
+    // Reference data (Instrument/Counterparty) doesn't need its own audit
+    // trail -- only that trades_aud captures which id a trade pointed at,
+    // per revision.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "instrument_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Instrument instrument;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "counterparty_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Counterparty counterparty;
 
     @Column(name = "asset_class", nullable = false, length = 20)
