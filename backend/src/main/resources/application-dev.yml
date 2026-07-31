@@ -9,13 +9,14 @@ spring:
       path: /h2
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/reconx
-    username: reconx_user
-    password: reconx_pass
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:h2:mem:reconx;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;NON_KEYWORDS=USER
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
 
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.H2Dialect
 
   kafka:
     listener:
