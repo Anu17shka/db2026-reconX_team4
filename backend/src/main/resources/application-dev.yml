@@ -1,6 +1,7 @@
 # =============================================================================
 # TICKET-ADV049 — dev profile: H2 in-memory + Kafka can be disabled if not running
 # =============================================================================
+
 spring:
 
   h2:
@@ -18,6 +19,7 @@ spring:
     password:
     driver-class-name: org.h2.Driver
 
+
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
 
@@ -27,8 +29,31 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
     listener:
-      missing-topics-fatal: false   # don't blow up if Kafka isn't running locally
+      missing-topics-fatal: false
+
+
+# =============================================================================
+# TICKET-ADV058 — Swagger / OpenAPI configuration
+# =============================================================================
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+  api-docs:
+    path: /v1/api-docs
+    enabled: true
+
 
 logging:
   level:
     com.dbtraining.reconx: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
