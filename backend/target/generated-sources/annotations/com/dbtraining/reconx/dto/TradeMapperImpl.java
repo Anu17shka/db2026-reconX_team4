@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-07-30T02:15:59-0700",
+    date = "2026-07-31T02:06:31-0700",
     comments = "version: 1.6.2, compiler: javac, environment: Java 21.0.1 (Oracle Corporation)"
 )
 @Component
@@ -23,55 +23,51 @@ public class TradeMapperImpl implements TradeMapper {
             return null;
         }
 
-        Long instrumentId = null;
-        String instrumentSymbol = null;
         Long counterpartyId = null;
         String counterpartyName = null;
+        Long instrumentId = null;
+        String instrumentSymbol = null;
+        String status = null;
         Long id = null;
         String tradeRef = null;
-        String assetClass = null;
-        String side = null;
         BigDecimal quantity = null;
         BigDecimal price = null;
         LocalDate tradeDate = null;
-        String status = null;
         Instant createdAt = null;
         Instant modifiedAt = null;
 
-        instrumentId = tradeInstrumentId( trade );
-        instrumentSymbol = tradeInstrumentSymbol( trade );
         counterpartyId = tradeCounterpartyId( trade );
         counterpartyName = tradeCounterpartyName( trade );
+        instrumentId = tradeInstrumentId( trade );
+        instrumentSymbol = tradeInstrumentSymbol( trade );
+        status = TradeMapper.statusToString( trade.getStatus() );
         id = trade.getId();
         tradeRef = trade.getTradeRef();
-        assetClass = trade.getAssetClass();
-        side = trade.getSide();
         quantity = trade.getQuantity();
         price = trade.getPrice();
         tradeDate = trade.getTradeDate();
-        status = trade.getStatus();
         createdAt = trade.getCreatedAt();
         modifiedAt = trade.getModifiedAt();
 
-        TradeResponse tradeResponse = new TradeResponse( id, tradeRef, instrumentId, instrumentSymbol, counterpartyId, counterpartyName, assetClass, side, quantity, price, tradeDate, status, createdAt, modifiedAt );
+        TradeResponse tradeResponse = new TradeResponse( id, tradeRef, counterpartyId, counterpartyName, instrumentId, instrumentSymbol, quantity, price, tradeDate, status, createdAt, modifiedAt );
 
         return tradeResponse;
     }
 
-    private Long tradeInstrumentId(Trade trade) {
-        Instrument instrument = trade.getInstrument();
-        if ( instrument == null ) {
+    @Override
+    public Trade toEntity(TradeRequest req) {
+        if ( req == null ) {
             return null;
         }
-        return instrument.getId();
-    }
 
-    private String tradeInstrumentSymbol(Trade trade) {
-        Instrument instrument = trade.getInstrument();
-        if ( instrument == null ) {
-            return null;
-        }
-        return instrument.getSymbol();
+        Trade trade = new Trade();
+
+        trade.setTradeRef( req.tradeRef() );
+        trade.setQuantity( req.quantity() );
+        trade.setPrice( req.price() );
+        trade.setTradeDate( req.tradeDate() );
+
+        return trade;
     }
 
     private Long tradeCounterpartyId(Trade trade) {
@@ -88,5 +84,21 @@ public class TradeMapperImpl implements TradeMapper {
             return null;
         }
         return counterparty.getName();
+    }
+
+    private Long tradeInstrumentId(Trade trade) {
+        Instrument instrument = trade.getInstrument();
+        if ( instrument == null ) {
+            return null;
+        }
+        return instrument.getId();
+    }
+
+    private String tradeInstrumentSymbol(Trade trade) {
+        Instrument instrument = trade.getInstrument();
+        if ( instrument == null ) {
+            return null;
+        }
+        return instrument.getSymbol();
     }
 }
