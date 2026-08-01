@@ -1,32 +1,54 @@
 # =============================================================================
 # TICKET-ADV049 — dev profile: H2 in-memory + Kafka can be disabled if not running
 # =============================================================================
+
 spring:
-  
+
   h2:
     console:
       enabled: true
       path: /h2
-  
-  
+
+
   datasource:
     url: jdbc:postgresql://localhost:5432/reconx
     username: reconx_user
     password: reconx_pass
     driver-class-name: org.postgresql.Driver
 
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
-  # H2 doesn't ship a JSONB type — Liquibase preconditions in the changelog skip
-  # the JSONB GIN-index step on H2 (see 003-jsonb.xml).
-  
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
     listener:
-      missing-topics-fatal: false   # don't blow up if Kafka isn't running locally
+      missing-topics-fatal: false
+
+
+# =============================================================================
+# TICKET-ADV058 — Swagger / OpenAPI configuration
+# =============================================================================
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+  api-docs:
+    path: /v1/api-docs
+    enabled: true
+
 
 logging:
   level:
     com.dbtraining.reconx: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

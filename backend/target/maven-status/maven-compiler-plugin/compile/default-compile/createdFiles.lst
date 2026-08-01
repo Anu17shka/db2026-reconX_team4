@@ -65,6 +65,7 @@ com\dbtraining\reconx\security\SecurityConfig.class
 com\dbtraining\reconx\model\FXTrade.class
 com\dbtraining\reconx\repository\ReconBreakRepository.class
 com\dbtraining\reconx\exception\ReconException.class
+com\dbtraining\reconx\service\TradeLookupService.class
 com\dbtraining\reconx\repository\AppUserRepository.class
 com\dbtraining\reconx\repository\entity\ReconBreak.class
 com\dbtraining\reconx\dto\TradeRequest.class

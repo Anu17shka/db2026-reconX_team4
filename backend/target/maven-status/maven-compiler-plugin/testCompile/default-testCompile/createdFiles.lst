@@ -3,6 +3,7 @@ com\dbtraining\reconx\service\ReconSummaryCollectorTest.class
 com\dbtraining\reconx\model\TradeToStringTest.class
 com\dbtraining\reconx\model\TradeTypeOrderingTest.class
 com\dbtraining\reconx\model\MoneyTest.class
+com\dbtraining\reconx\service\TradeLookupServiceTest.class
 com\dbtraining\reconx\model\BondTradeTest.class
 com\dbtraining\reconx\model\TradeEqualityTest.class
 com\dbtraining\reconx\model\TradeRefTest.class
