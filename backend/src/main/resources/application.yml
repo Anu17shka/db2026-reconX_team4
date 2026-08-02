@@ -1,8 +1,5 @@
 # =============================================================================
-# TICKET-ADV049 — Spring profile configuration (default + profile overrides)
-#
-# WHAT:    Base configuration shared across dev/uat/prod. Profile-specific
-#          overrides live in application-{profile}.yml.
+# TICKET-ADV049 — Spring profile configuration
 # =============================================================================
 
 spring:
@@ -12,7 +9,6 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
-  # ADV012 — Liquibase configuration
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     enabled: true
@@ -25,58 +21,43 @@ spring:
       hibernate.format_sql: true
       hibernate.jdbc.time_zone: UTC
 
-  # ADV081-ADV082 — Caffeine cache config
   cache:
-    cache-names: instruments,counterparties
-    caffeine:
-      spec: maximumSize=500,expireAfterWrite=5m
-
-  # ADV128 — Kafka producer/consumer defaults
-  kafka:
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.add.type.headers: false
-
-    consumer:
-      group-id: reconx-service
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: com.dbtraining.reconx.dto
-        spring.json.use.type.headers: false
-        spring.json.value.default.type: com.dbtraining.reconx.dto.TradeEvent
+    cache-names:
+      - instruments
+      - counterparties
 
 
 server:
   servlet:
     context-path: /api
 
-
-# =============================================================================
-# ADV083-ADV086 / ADV097 — Actuator + Prometheus exposure
-# =============================================================================
-
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include:
+          - health
+          - info
+          - metrics
+          - prometheus
+          - env
+          - loggers
+          - caches
+
       base-path: /actuator
+
 
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
       probes:
         enabled: true
+
 
   metrics:
     distribution:
       percentiles-histogram:
         http.server.requests: true
-        reconciliation.duration: true
 
       percentiles:
         http.server.requests: 0.5,0.95,0.99
@@ -84,10 +65,6 @@ management:
     tags:
       application: ${spring.application.name}
 
-
-# =============================================================================
-# ADV072 — JWT signing config
-# =============================================================================
 
 reconx:
   security:
