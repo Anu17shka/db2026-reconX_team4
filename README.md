@@ -159,6 +159,28 @@ live in HttpOnly cookies for 7 days.
 
 ---
 
+## API versioning (TICKET-ADV080)
+
+Every resource controller carries an explicit `/v1/...` prefix
+(`/api/v1/trades`, `/api/v1/recon/...`, `/api/v1/audit/...`), combined with
+the `/api` context-path set in `application.yml`. `AuthController` is the one
+deliberate exception — `POST /api/auth/login` stays unversioned since it's
+the entrypoint every client hits before it has a token.
+
+The rule going forward: **a breaking change ships under a new version
+segment (`/api/v2/...`); the old segment (`/api/v1/...`) keeps working until
+its published `Sunset` date.** A retired endpoint returns `410 Gone` — never
+a bare `404` — with three headers so callers can tell "deliberately retired"
+apart from "never existed":
+
+- `Deprecation: true`
+- `Sunset: <HTTP-date>` — when the old segment stops responding
+- `Link: </api/v1/...>; rel="successor-version"` — where to migrate to
+
+See `TradeController.oldSearch` for a worked example of the pattern.
+
+---
+
 ## Deploy to the demo laptop (Day 10)
 
 The deploy story is **GitHub Actions builds + pushes Docker images to GHCR;

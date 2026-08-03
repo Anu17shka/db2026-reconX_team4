@@ -34,30 +34,24 @@ package com.dbtraining.reconx;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 
 /**
  * Main entry point for the ReconX trade reconciliation service.
+ *
+ * <p>JPA repository/auditing/entity-scan setup lives in
+ * {@link com.dbtraining.reconx.config.JpaConfig} rather than here — see that
+ * class for why.</p>
  */
 @SpringBootApplication(
         scanBasePackages = "com.dbtraining.reconx"
 )
-@EnableJpaAuditing
 @EnableCaching
 @EnableKafka
 @EnableAsync
-@EnableJpaRepositories(
-        basePackages = "com.dbtraining.reconx.repository"
-)
-@EntityScan(
-        basePackages = "com.dbtraining.reconx.repository.entity"
-)
 public class ReconxApplication {
 
     public static void main(String[] args) {

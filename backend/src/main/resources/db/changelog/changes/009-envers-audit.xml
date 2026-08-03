@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ TICKET-ADV052 — Hibernate Envers audit tables for the Trade entity
+
+ WHAT:    revinfo (one row per committed transaction that touched an
+          @Audited entity) and trades_aud (one row per revision of a
+          Trade:INSERT/UPDATE/DELETE, revtype 0/1/2).
+ HOW:     Column shapes were captured by letting Hibernate auto-generate
+          them once via ddl-auto=update against a throwaway H2 instance
+          (this project runs ddl-auto=validate normally, so Envers'
+          usual auto-DDL never fires:Liquibase has to own this schema
+          too, same as every other table). revtype uses SMALLINT rather
+          than Hibernate's own TINYINT: H2 in PostgreSQL-compat mode
+          rejects TINYINT outright since Postgres has no such type.
+ WHY:     Trade.java (ADV050) already carries @Audited; without these
+          tables Hibernate's schema validation fails at boot the moment
+          Envers tries to register the entity.
+ OBSERVE: After boot, \dt *_aud and \dt revinfo list both tables; three
+          updates to one trade leave four rows in trades_aud for its id.
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- A plain autoIncrement column satisfies H2 (its default id-generation
+         strategy is IDENTITY there) but not Postgres: Hibernate's default
+         revision-id generator resolves to SEQUENCE strategy on Postgres and
+         expects an actual sequence object named revinfo_seq to already
+         exist, native IDENTITY/SERIAL columns don't satisfy that check. An
+         explicit sequence works identically on both databases. -->
+    <changeSet id="009-create-revinfo-seq" author="trainer">
+        <!-- incrementBy=50 matches Hibernate's default SequenceStyleGenerator
+             allocation size; a mismatch fails schema validation at boot. -->
+        <createSequence sequenceName="revinfo_seq" startValue="1" incrementBy="50"/>
+        <rollback>
+            <dropSequence sequenceName="revinfo_seq"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="009-create-revinfo" author="trainer">
+        <createTable tableName="revinfo">
+            <column name="rev" type="INT" defaultValueSequenceNext="revinfo_seq">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="revtstmp" type="BIGINT"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="revinfo"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="009-create-trades-aud" author="trainer">
+        <createTable tableName="trades_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rev" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+            <column name="asset_class" type="VARCHAR(20)"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="deleted_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="modified_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="price" type="NUMERIC(18,4)"/>
+            <column name="quantity" type="NUMERIC(18,4)"/>
+            <column name="side" type="VARCHAR(4)"/>
+            <column name="status" type="VARCHAR(20)"/>
+            <column name="trade_date" type="DATE"/>
+            <column name="trade_ref" type="VARCHAR(30)"/>
+            <column name="counterparty_id" type="BIGINT"/>
+            <column name="instrument_id" type="BIGINT"/>
+        </createTable>
+        <addPrimaryKey tableName="trades_aud" columnNames="rev, id"
+                       constraintName="pk_trades_aud"/>
+        <addForeignKeyConstraint baseTableName="trades_aud" baseColumnNames="rev"
+                                 constraintName="fk_trades_aud_revinfo"
+                                 referencedTableName="revinfo" referencedColumnNames="rev"/>
+        <rollback>
+            <dropTable tableName="trades_aud"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
