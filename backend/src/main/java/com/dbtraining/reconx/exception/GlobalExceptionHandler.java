@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -106,6 +107,21 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
+
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ProblemDetail handleBadCredentials(BadCredentialsException ex) {
+
+        ProblemDetail pd =
+                ProblemDetail.forStatusAndDetail(
+                        HttpStatus.UNAUTHORIZED,
+                        ex.getMessage()
+                );
+
+        pd.setTitle("Invalid credentials");
+
+        return pd;
+    }
 
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
