@@ -39,10 +39,11 @@
 //     </form>
 //   );
 // }
-// Login page with temporary mock authentication until backend JWT API is connected.
+// Login page exchanging email/password for a JWT.
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@context/AuthContext.jsx';
+import { api } from '@services/apiService.js';
 
 export default function Login() {
   const { login } = useAuth();
@@ -57,22 +58,9 @@ export default function Login() {
     setError(null);
 
     try {
-      // Temporary mock login (backend not connected yet)
-      if (email === 'admin@db.com' && password === 'admin123') {
-
-        const token = 'dummy-jwt-token';
-        const role = 'ADMIN';
-
-        login(token, role);
-
-        console.log('TOKEN:', token);
-        console.log('ROLE:', role);
-
-        navigate('/');
-      } else {
-        throw new Error('Invalid email or password');
-      }
-
+      const { token, role } = await api.login(email, password);
+      login(token, role);
+      navigate('/');
     } catch (err) {
       setError(err.message || 'Login failed');
     }

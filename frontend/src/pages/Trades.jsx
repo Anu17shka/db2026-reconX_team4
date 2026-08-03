@@ -1,6 +1,6 @@
 // TICKET-ADV114 — Compound DataTable.
 // TICKET-ADV117 — useDebouncedSearch.
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { withAuth } from '@components/withAuth.jsx';
 import DataTable from '@components/DataTable.jsx';
 import { useDebouncedSearch } from '@hooks/useDebouncedSearch.js';
@@ -12,11 +12,24 @@ function Trades() {
   const [page, setPage] = useState(0);
   const [data, setData] = useState({ items: [], totalPages: 0 });
 
-  // TODO(TICKET-ADV114 + ADV117): useEffect that:
-  //   - builds a query string from `page` and `debounced` (status filter)
-  //   - calls api.listTrades(params) and stores the response in `data`
-  //   - re-runs whenever `page` or `debounced` changes
-  //   - degrades gracefully on error (set empty page).
+  useEffect(() => {
+    let cancelled = false;
+
+    const query = new URLSearchParams({ page: String(page) });
+    if (debounced) query.set('status', debounced);
+
+    api.listTrades(`?${query.toString()}`)
+      .then((res) => {
+        if (!cancelled) setData(res);
+      })
+      .catch(() => {
+        if (!cancelled) setData({ items: [], totalPages: 0 });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [page, debounced]);
 
   return (
     <section>
@@ -35,8 +48,18 @@ function Trades() {
           { key: 'price',    label: 'Price' },
           { key: 'status',   label: 'Status' },
         ]} />
-        {/* TODO(TICKET-ADV114): render a DataTable.Body with `rows={data.items}`
-            and a `render` prop that returns one <span> per column. */}
+        <DataTable.Body
+          rows={data.items}
+          render={(row) => (
+            <>
+              <span>{row.tradeRef}</span>
+              <span>{row.instrumentSymbol}</span>
+              <span>{row.quantity}</span>
+              <span>{row.price}</span>
+              <span>{row.status}</span>
+            </>
+          )}
+        />
         <DataTable.Pagination
           page={page}
           totalPages={Math.max(1, data.totalPages)}
