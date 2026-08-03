@@ -134,6 +134,7 @@ class TradeRequestValidationTest {
                 "TR001",
                 1L,
                 1L,
+                "BUY",
                 BigDecimal.valueOf(100),
                 BigDecimal.valueOf(50),
                 LocalDate.now()
@@ -153,6 +154,7 @@ class TradeRequestValidationTest {
                 "",
                 1L,
                 1L,
+                "BUY",
                 BigDecimal.valueOf(100),
                 BigDecimal.valueOf(50),
                 LocalDate.now()
@@ -172,6 +174,7 @@ class TradeRequestValidationTest {
                 "TR001",
                 1L,
                 1L,
+                "BUY",
                 BigDecimal.valueOf(-10),
                 BigDecimal.valueOf(50),
                 LocalDate.now()

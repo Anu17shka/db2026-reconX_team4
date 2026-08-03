@@ -101,4 +101,19 @@
 
 </changeSet>
 
+<!-- loadData inserts explicit ids (1..500); the identity sequence backing
+     trades.id does NOT auto-advance for explicit inserts on either database,
+     so the first app-issued INSERT (no id given) would collide on id=1. -->
+<changeSet id="008-seed-trades-reset-sequence-postgresql" author="trainer" dbms="postgresql">
+    <sql>SELECT setval(pg_get_serial_sequence('trades', 'id'), (SELECT MAX(id) FROM trades));</sql>
+    <rollback/>
+</changeSet>
+
+<!-- H2's RESTART WITH takes a literal, not a subquery, so this is pinned to
+     one past trades.csv's row count (500). Bump it if trades.csv grows. -->
+<changeSet id="008-seed-trades-reset-sequence-h2" author="trainer" dbms="h2">
+    <sql>ALTER TABLE trades ALTER COLUMN id RESTART WITH 501;</sql>
+    <rollback/>
+</changeSet>
+
 </databaseChangeLog>

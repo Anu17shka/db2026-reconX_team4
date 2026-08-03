@@ -37,6 +37,15 @@ public interface TradeRepository
             "counterparty",
             "instrument"
     })
+    Optional<Trade> findById(Long id);
+
+
+
+    @Override
+    @EntityGraph(attributePaths = {
+            "counterparty",
+            "instrument"
+    })
     Page<Trade> findAll(
             org.springframework.data.jpa.domain.Specification<Trade> spec,
             Pageable pageable
