@@ -45,6 +45,18 @@ public class TradeEventProducer {
     }
 
     public void publish(TradeEvent event) {
-        throw new UnsupportedOperationException("TICKET-ADV129");
+        log.debug("Publishing TradeEvent eventId={} ref={} type={}",
+                event.eventId(), event.tradeRef(), event.eventType());
+        // GOTCHA above: a Kafka publish failure must never roll back the DB
+        // transaction the caller is inside. send() itself can block/throw
+        // synchronously (e.g. TimeoutException while it waits up to
+        // max.block.ms for topic metadata) if the broker is unreachable, so
+        // this is caught and logged rather than propagated.
+        try {
+            template.send(TOPIC, event.tradeRef(), event);
+        } catch (Exception ex) {
+            log.warn("Failed to publish TradeEvent eventId={} ref={}: {}",
+                    event.eventId(), event.tradeRef(), ex.getMessage());
+        }
     }
 }

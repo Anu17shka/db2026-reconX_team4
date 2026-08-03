@@ -1,6 +1,7 @@
 package com.dbtraining.reconx.service;
 
 
+import com.dbtraining.reconx.dto.TradeEvent;
 import com.dbtraining.reconx.dto.TradeRequest;
 import com.dbtraining.reconx.exception.TradeNotFoundException;
 
@@ -14,6 +15,8 @@ import com.dbtraining.reconx.repository.InstrumentRepository;
 import com.dbtraining.reconx.repository.TradeRepository;
 import com.dbtraining.reconx.repository.TradeSpecification;
 
+import com.dbtraining.reconx.repository.entity.Counterparty;
+import com.dbtraining.reconx.repository.entity.Instrument;
 import com.dbtraining.reconx.repository.entity.Trade;
 
 
@@ -26,7 +29,9 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.UUID;
 
 
 
@@ -69,7 +74,39 @@ public class TradeService {
             String actor
     ) {
 
-        throw new UnsupportedOperationException("TICKET-ADV064");
+        if (tradeRepo.findByTradeRef(req.tradeRef()).isPresent()) {
+            throw new DuplicateTradeRefException(
+                    "Trade already exists with tradeRef " + req.tradeRef());
+        }
+
+        Counterparty counterparty = cpRepo.findById(req.counterpartyId())
+                .orElseThrow(() -> new TradeNotFoundException(
+                        "Counterparty not found with id " + req.counterpartyId()));
+
+        Instrument instrument = instRepo.findById(req.instrumentId())
+                .orElseThrow(() -> new TradeNotFoundException(
+                        "Instrument not found with id " + req.instrumentId()));
+
+        Trade trade = new Trade();
+        trade.setTradeRef(req.tradeRef());
+        trade.setCounterparty(counterparty);
+        trade.setInstrument(instrument);
+        trade.setAssetClass(instrument.getAssetClass());
+        trade.setSide(req.side());
+        trade.setQuantity(req.quantity());
+        trade.setPrice(req.price());
+        trade.setTradeDate(req.tradeDate());
+        trade.setStatus("PENDING");
+
+        Trade saved = tradeRepo.save(trade);
+
+        metrics.incrementTradeCreated();
+        metrics.recordTradeValue(req.quantity().multiply(req.price()).doubleValue());
+
+        events.publish(new TradeEvent(UUID.randomUUID(), saved.getTradeRef(),
+                TradeEvent.EventType.TRADE_CREATED, Instant.now(), actor, null, null));
+
+        return saved;
     }
 
 
@@ -81,7 +118,32 @@ public class TradeService {
             String actor
     ) {
 
-        throw new UnsupportedOperationException("TICKET-ADV065");
+        Trade trade = tradeRepo.findById(id)
+                .orElseThrow(() -> new TradeNotFoundException("Trade not found with id " + id));
+
+        Counterparty counterparty = cpRepo.findById(req.counterpartyId())
+                .orElseThrow(() -> new TradeNotFoundException(
+                        "Counterparty not found with id " + req.counterpartyId()));
+
+        Instrument instrument = instRepo.findById(req.instrumentId())
+                .orElseThrow(() -> new TradeNotFoundException(
+                        "Instrument not found with id " + req.instrumentId()));
+
+        trade.setTradeRef(req.tradeRef());
+        trade.setCounterparty(counterparty);
+        trade.setInstrument(instrument);
+        trade.setAssetClass(instrument.getAssetClass());
+        trade.setSide(req.side());
+        trade.setQuantity(req.quantity());
+        trade.setPrice(req.price());
+        trade.setTradeDate(req.tradeDate());
+
+        Trade saved = tradeRepo.save(trade);
+
+        events.publish(new TradeEvent(UUID.randomUUID(), saved.getTradeRef(),
+                TradeEvent.EventType.TRADE_UPDATED, Instant.now(), actor, null, null));
+
+        return saved;
     }
 
 
@@ -93,7 +155,17 @@ public class TradeService {
             String actor
     ) {
 
-        throw new UnsupportedOperationException("TICKET-ADV066");
+        Trade trade = tradeRepo.findById(id)
+                .orElseThrow(() -> new TradeNotFoundException("Trade not found with id " + id));
+
+        trade.setStatus(status);
+
+        Trade saved = tradeRepo.save(trade);
+
+        events.publish(new TradeEvent(UUID.randomUUID(), saved.getTradeRef(),
+                TradeEvent.EventType.TRADE_UPDATED, Instant.now(), actor, null, null));
+
+        return saved;
     }
 
 
@@ -105,7 +177,14 @@ public class TradeService {
             String actor
     ) {
 
-        throw new UnsupportedOperationException("TICKET-ADV067");
+        Trade trade = tradeRepo.findById(id)
+                .orElseThrow(() -> new TradeNotFoundException("Trade not found with id " + id));
+
+        trade.softDelete();
+        tradeRepo.save(trade);
+
+        events.publish(new TradeEvent(UUID.randomUUID(), trade.getTradeRef(),
+                TradeEvent.EventType.TRADE_CANCELLED, Instant.now(), actor, null, null));
     }
 
 

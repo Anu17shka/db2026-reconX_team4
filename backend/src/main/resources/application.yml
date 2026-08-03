@@ -26,6 +26,13 @@ spring:
       - instruments
       - counterparties
 
+  kafka:
+    producer:
+      properties:
+        # Fail fast instead of blocking the request thread for the 60s
+        # default when the broker/topic isn't reachable (see TradeEventProducer).
+        max.block.ms: 3000
+
 
 server:
   servlet:

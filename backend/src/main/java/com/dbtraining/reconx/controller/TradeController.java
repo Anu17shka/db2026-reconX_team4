@@ -4,6 +4,7 @@ import com.dbtraining.reconx.dto.PagedResponse;
 import com.dbtraining.reconx.dto.TradeMapper;
 import com.dbtraining.reconx.dto.TradeRequest;
 import com.dbtraining.reconx.dto.TradeResponse;
+import com.dbtraining.reconx.dto.TradeStatusUpdateRequest;
 import com.dbtraining.reconx.repository.entity.Trade;
 import com.dbtraining.reconx.service.TradeService;
 
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
@@ -18,14 +20,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.LocalDate;
-import java.util.Map;
 
 
 @RestController
@@ -106,7 +110,11 @@ public class TradeController {
             @AuthenticationPrincipal Object principal
     ) {
 
-        throw new UnsupportedOperationException("TICKET-ADV064");
+        String actor = String.valueOf(principal);
+        Trade saved = service.create(req, actor);
+        return ResponseEntity
+                .created(URI.create("/api/v1/trades/" + saved.getId()))
+                .body(mapper.toResponse(saved));
     }
 
 
@@ -119,7 +127,7 @@ public class TradeController {
             @AuthenticationPrincipal Object principal
     ) {
 
-        throw new UnsupportedOperationException("TICKET-ADV065");
+        return mapper.toResponse(service.update(id, req, String.valueOf(principal)));
     }
 
 
@@ -128,11 +136,11 @@ public class TradeController {
     @Operation(summary = "Update only the status field")
     public TradeResponse updateStatus(
             @PathVariable Long id,
-            @RequestBody Map<String,String> body,
+            @Valid @RequestBody TradeStatusUpdateRequest body,
             @AuthenticationPrincipal Object principal
     ) {
 
-        throw new UnsupportedOperationException("TICKET-ADV066");
+        return mapper.toResponse(service.updateStatus(id, body.status(), String.valueOf(principal)));
     }
 
 
@@ -145,7 +153,27 @@ public class TradeController {
             @AuthenticationPrincipal Object principal
     ) {
 
-        throw new UnsupportedOperationException("TICKET-ADV067");
+        service.softDelete(id, String.valueOf(principal));
+        return ResponseEntity.noContent().build();
+    }
+
+
+
+
+    /**
+     * TICKET-ADV080 — example of retiring an old endpoint surface area
+     * cleanly: 410 Gone plus the three standard deprecation headers, rather
+     * than a bare 404 that leaves callers unable to tell the difference
+     * between "never existed" and "deliberately retired".
+     */
+    @Deprecated(since = "v1.4.0", forRemoval = true)
+    @GetMapping(value = "/old-search", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "[DEPRECATED] use GET /v1/trades instead", deprecated = true)
+    public ResponseEntity<Void> oldSearch(HttpServletResponse response) {
+        response.setHeader("Deprecation", "true");
+        response.setHeader("Sunset", "Sat, 1 Jul 2026 00:00:00 GMT");
+        response.setHeader("Link", "</api/v1/trades>; rel=\"successor-version\"");
+        return ResponseEntity.status(HttpStatus.GONE).build();
     }
 
 }
