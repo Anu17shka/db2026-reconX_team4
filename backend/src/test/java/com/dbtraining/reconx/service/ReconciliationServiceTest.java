@@ -1,13 +1,10 @@
 package com.dbtraining.reconx.service;
 
 import com.dbtraining.reconx.dto.ReconResult;
-import com.dbtraining.reconx.model.EquityTrade;
-import com.dbtraining.reconx.model.ReconciliationRule;
-import com.dbtraining.reconx.model.Side;
-import com.dbtraining.reconx.model.TradeRef;
-import com.dbtraining.reconx.model.TradeType;
-
+import com.dbtraining.reconx.model.*;
+import com.dbtraining.reconx.observability.ReconMetrics;
 import com.dbtraining.reconx.repository.ReconResultRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -16,72 +13,85 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 class ReconciliationServiceTest {
 
     @Test
     void testReconcile_savesResultWithMatchedStatus() {
+
         // given
         ReconResultRepository repo = mock(ReconResultRepository.class);
+
         ReconciliationEngine engine = new ReconciliationEngine();
-        ReconciliationService svc = new ReconciliationService(engine, repo);
 
-        // Trade i = new Trade("TRD-1", "CP-1", "SAP.DE",
-        //         new BigDecimal("10"), new BigDecimal("100"), LocalDate.now());
-        // Trade e = new Trade("TRD-1", "CP-1", "SAP.DE",
-        //         new BigDecimal("10"), new BigDecimal("100"), LocalDate.now());
+        ReconMetrics reconMetrics =
+                new ReconMetrics(new SimpleMeterRegistry());
+
+        ReconciliationService service =
+                new ReconciliationService(
+                        engine,
+                        repo,
+                        reconMetrics
+                );
 
 
-        TradeType internal =
-        EquityTrade.builder()
-                .tradeRef(
-                        TradeRef.of(
-                                "SAP-20260730-0001"
+        List<TradeType> internal =
+                List.of(
+                        equity(
+                                "EQU-20260603-0001",
+                                "100.00",
+                                "10"
                         )
-                )
-                .instrumentSymbol("SAP.DE")
-                .quantity(new BigDecimal("10"))
-                .price(new BigDecimal("100"))
-                .currency("EUR")
-                .side(Side.BUY)
-                .tradeDate(LocalDate.now())
-                .counterpartyId(1L)
-                .build();
+                );
 
-
-TradeType external =
-        EquityTrade.builder()
-                .tradeRef(
-                        TradeRef.of(
-                                "SAP-20260730-0001"
+        List<TradeType> external =
+                List.of(
+                        equity(
+                                "EQU-20260603-0001",
+                                "100.00",
+                                "10"
                         )
-                )
-                .instrumentSymbol("SAP.DE")
-                .quantity(new BigDecimal("10"))
-                .price(new BigDecimal("100"))
-                .currency("EUR")
-                .side(Side.BUY)
-                .tradeDate(LocalDate.now())
-                .counterpartyId(1L)
-                .build();
+                );
+
 
         // when
-        // svc.runRecon(List.of(i), List.of(e));
+        service.runRecon(
+                internal,
+                external,
+                ReconciliationRule.EXACT
+        );
 
-        svc.runRecon(
-        List.of(internal),
-        List.of(external),
-        ReconciliationRule.EXACT
-);
 
         // then
-        ArgumentCaptor<ReconResult> captor = ArgumentCaptor.forClass(ReconResult.class);
+        ArgumentCaptor<ReconResult> captor =
+                ArgumentCaptor.forClass(ReconResult.class);
+
         verify(repo).save(captor.capture());
-        // assertThat(captor.getValue().tradeRef()).isEqualTo("TRD-1");
-        assertThat(captor.getValue().tradeRef())
-        .isEqualTo("SAP-20260730-0001");
-        assertThat(captor.getValue().status()).isEqualTo(ReconResult.Status.MATCHED);
+
+        ReconResult saved = captor.getValue();
+
+        assertThat(saved.tradeRef())
+                .isEqualTo("EQU-20260603-0001");
+
+        assertThat(saved.status())
+                .isEqualTo(ReconResult.Status.MATCHED);
+    }
+
+
+    private EquityTrade equity(String ref,
+                               String price,
+                               String qty) {
+
+        return EquityTrade.builder()
+                .tradeRef(TradeRef.of(ref))
+                .instrumentSymbol("SAP.DE")
+                .price(new BigDecimal(price))
+                .quantity(new BigDecimal(qty))
+                .currency("EUR")
+                .side(Side.BUY)
+                .tradeDate(LocalDate.of(2026, 6, 3))
+                .counterpartyId(1L)
+                .build();
     }
 }
