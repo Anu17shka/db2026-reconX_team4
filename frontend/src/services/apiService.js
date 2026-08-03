@@ -42,15 +42,12 @@ export const api = {
     return request('DELETE', `/v1/trades/${id}`);
   },
   runRecon: (req)            => {
-    // TODO(TICKET-ADV121): POST /v1/recon/run to enqueue a recon job.
-    throw new Error('TICKET-ADV121 not implemented');
+    return request('POST', '/v1/recon/run', req);
   },
   reconResults: (jobId)      => {
-    // TODO(TICKET-ADV121): GET /v1/recon/jobs/{jobId}/results.
-    throw new Error('TICKET-ADV121 not implemented');
+    return request('GET', `/v1/recon/jobs/${jobId}/results`);
   },
   audit: (tradeRef)          => {
-    // TODO(TICKET-ADV121): GET /v1/audit/trades/{tradeRef}.
-    throw new Error('TICKET-ADV121 not implemented');
+    return request('GET', `/v1/audit/trades/${tradeRef}`);
   },
 };
