@@ -6,57 +6,57 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-/**
- * ============================================================================
- * TICKET-ADV129 — TradeEventProducer
- *
- * WHAT:    Publishes TradeEvent messages to the `trade-events` Kafka topic.
- * HOW:     KafkaTemplate<String, TradeEvent>. Key = tradeRef so that all
- *          events for the same trade hash to the same partition and
- *          preserve ordering.
- * WHY:     Out-of-order events for the same trade would make event sourcing
- *          impossible (you'd "apply" CREATE after UPDATE).
- * OBSERVE: Kafdrop -> `trade-events` shows one message per published event,
- *          partitioned by tradeRef.
- * ============================================================================
- *
- *  TODO(TICKET-ADV129):
- *    public void publish(TradeEvent event) {
- *        log.debug("Publishing TradeEvent eventId={} ref={} type={}",
- *                  event.eventId(), event.tradeRef(), event.eventType());
- *        template.send(TOPIC, event.tradeRef(), event);
- *    }
- *
- *  GOTCHA: NEVER let a Kafka publish failure roll back the DB transaction.
- *          Publish AFTER commit (use TransactionSynchronizationManager or
- *          @TransactionalEventListener), or accept eventual consistency.
- * ============================================================================
- */
+import static com.dbtraining.reconx.kafka.KafkaTopicsConfig.TRADE_EVENTS;
+
 @Component
 public class TradeEventProducer {
 
-    private static final Logger log = LoggerFactory.getLogger(TradeEventProducer.class);
-    private static final String TOPIC = "trade-events";
+    private static final Logger log =
+            LoggerFactory.getLogger(TradeEventProducer.class);
 
     private final KafkaTemplate<String, TradeEvent> template;
+
 
     public TradeEventProducer(KafkaTemplate<String, TradeEvent> template) {
         this.template = template;
     }
 
+
     public void publish(TradeEvent event) {
-        log.debug("Publishing TradeEvent eventId={} ref={} type={}",
-                event.eventId(), event.tradeRef(), event.eventType());
-        // GOTCHA above: a Kafka publish failure must never roll back the DB
-        // transaction the caller is inside. send() itself can block/throw
-        // synchronously (e.g. TimeoutException while it waits up to
-        // max.block.ms for topic metadata) if the broker is unreachable, so
-        // this is caught and logged rather than propagated.
-        try {
-            template.send(TOPIC, event.tradeRef(), event);
-        } catch (Exception ex) {
-            log.warn("Failed to publish TradeEvent eventId={} ref={}: {}",
-                    event.eventId(), event.tradeRef(), ex.getMessage());
-        }
+
+        log.debug(
+            "Publishing TradeEvent eventId={} ref={} type={}",
+            event.eventId(),
+            event.tradeRef(),
+            event.eventType()
+        );
+
+
+        template.send(
+                TRADE_EVENTS,
+                event.tradeRef(),
+                event
+        ).whenComplete((result, ex) -> {
+
+            if (ex != null) {
+
+                log.error(
+                    "Failed publishing TradeEvent eventId={} tradeRef={}",
+                    event.eventId(),
+                    event.tradeRef(),
+                    ex
+                );
+
+            } else {
+
+                log.info(
+                    "TradeEvent published partition={} offset={}",
+                    result.getRecordMetadata().partition(),
+                    result.getRecordMetadata().offset()
+                );
+
+            }
+
+        });
     }
 }
