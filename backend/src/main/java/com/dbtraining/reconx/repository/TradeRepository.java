@@ -53,6 +53,10 @@ public interface TradeRepository
 
 
 
+    @EntityGraph(attributePaths = {
+            "counterparty",
+            "instrument"
+    })
     @Query("""
         SELECT t FROM Trade t
         WHERE t.tradeDate BETWEEN :from AND :to
