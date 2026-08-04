@@ -3,213 +3,68 @@ package com.dbtraining.reconx.service;
 
 import com.dbtraining.reconx.dto.TradeEvent;
 import com.dbtraining.reconx.dto.TradeRequest;
-import com.dbtraining.reconx.exception.TradeNotFoundException;
-
-import com.dbtraining.reconx.exception.DuplicateTradeRefException;
-
 import com.dbtraining.reconx.kafka.TradeEventProducer;
-import com.dbtraining.reconx.observability.TradeMetrics;
-
-import com.dbtraining.reconx.repository.CounterpartyRepository;
-import com.dbtraining.reconx.repository.InstrumentRepository;
 import com.dbtraining.reconx.repository.TradeRepository;
-import com.dbtraining.reconx.repository.TradeSpecification;
-
-import com.dbtraining.reconx.repository.entity.Counterparty;
-import com.dbtraining.reconx.repository.entity.Instrument;
+import com.dbtraining.reconx.repository.InstrumentRepository;
+import com.dbtraining.reconx.repository.CounterpartyRepository;
 import com.dbtraining.reconx.repository.entity.Trade;
+import com.dbtraining.reconx.repository.entity.Instrument;
+import com.dbtraining.reconx.repository.entity.Counterparty;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import org.springframework.data.jpa.domain.Specification;
-
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
-
 
 
 @Service
-@Transactional
 public class TradeService {
 
 
-    private final TradeRepository tradeRepo;
+    private static final Logger log =
+            LoggerFactory.getLogger(TradeService.class);
 
-    private final CounterpartyRepository cpRepo;
 
-    private final InstrumentRepository instRepo;
 
-    private final TradeEventProducer events;
+    private final TradeRepository tradeRepository;
 
-    private final TradeMetrics metrics;
+    private final TradeEventProducer tradeEventProducer;
+
+    private final ObjectMapper objectMapper;
+
+    private final InstrumentRepository instrumentRepository;
+
+    private final CounterpartyRepository counterpartyRepository;
 
 
 
     public TradeService(
-            TradeRepository tradeRepo,
-            CounterpartyRepository cpRepo,
-            InstrumentRepository instRepo,
-            TradeEventProducer events,
-            TradeMetrics metrics
+            TradeRepository tradeRepository,
+            TradeEventProducer tradeEventProducer,
+            ObjectMapper objectMapper,
+            InstrumentRepository instrumentRepository,
+            CounterpartyRepository counterpartyRepository
     ) {
 
-        this.tradeRepo = tradeRepo;
-        this.cpRepo = cpRepo;
-        this.instRepo = instRepo;
-        this.events = events;
-        this.metrics = metrics;
-    }
+        this.tradeRepository = tradeRepository;
+        this.tradeEventProducer = tradeEventProducer;
+        this.objectMapper = objectMapper;
+        this.instrumentRepository = instrumentRepository;
+        this.counterpartyRepository = counterpartyRepository;
 
-
-
-    public Trade create(
-            TradeRequest req,
-            String actor
-    ) {
-
-        if (tradeRepo.findByTradeRef(req.tradeRef()).isPresent()) {
-            throw new DuplicateTradeRefException(
-                    "Trade already exists with tradeRef " + req.tradeRef());
-        }
-
-        Counterparty counterparty = cpRepo.findById(req.counterpartyId())
-                .orElseThrow(() -> new TradeNotFoundException(
-                        "Counterparty not found with id " + req.counterpartyId()));
-
-        Instrument instrument = instRepo.findById(req.instrumentId())
-                .orElseThrow(() -> new TradeNotFoundException(
-                        "Instrument not found with id " + req.instrumentId()));
-
-        Trade trade = new Trade();
-        trade.setTradeRef(req.tradeRef());
-        trade.setCounterparty(counterparty);
-        trade.setInstrument(instrument);
-        trade.setAssetClass(instrument.getAssetClass());
-        trade.setSide(req.side());
-        trade.setQuantity(req.quantity());
-        trade.setPrice(req.price());
-        trade.setTradeDate(req.tradeDate());
-        trade.setStatus("PENDING");
-
-        Trade saved = tradeRepo.save(trade);
-
-        metrics.incrementTradeCreated();
-        metrics.recordTradeValue(req.quantity().multiply(req.price()).doubleValue());
-
-        events.publish(new TradeEvent(UUID.randomUUID(), saved.getTradeRef(),
-                TradeEvent.EventType.TRADE_CREATED, Instant.now(), actor, null, null));
-
-        return saved;
     }
 
 
 
 
-    public Trade update(
-            Long id,
-            TradeRequest req,
-            String actor
-    ) {
-
-        Trade trade = tradeRepo.findById(id)
-                .orElseThrow(() -> new TradeNotFoundException("Trade not found with id " + id));
-
-        Counterparty counterparty = cpRepo.findById(req.counterpartyId())
-                .orElseThrow(() -> new TradeNotFoundException(
-                        "Counterparty not found with id " + req.counterpartyId()));
-
-        Instrument instrument = instRepo.findById(req.instrumentId())
-                .orElseThrow(() -> new TradeNotFoundException(
-                        "Instrument not found with id " + req.instrumentId()));
-
-        trade.setTradeRef(req.tradeRef());
-        trade.setCounterparty(counterparty);
-        trade.setInstrument(instrument);
-        trade.setAssetClass(instrument.getAssetClass());
-        trade.setSide(req.side());
-        trade.setQuantity(req.quantity());
-        trade.setPrice(req.price());
-        trade.setTradeDate(req.tradeDate());
-
-        Trade saved = tradeRepo.save(trade);
-
-        events.publish(new TradeEvent(UUID.randomUUID(), saved.getTradeRef(),
-                TradeEvent.EventType.TRADE_UPDATED, Instant.now(), actor, null, null));
-
-        return saved;
-    }
-
-
-
-
-    public Trade updateStatus(
-            Long id,
-            String status,
-            String actor
-    ) {
-
-        Trade trade = tradeRepo.findById(id)
-                .orElseThrow(() -> new TradeNotFoundException("Trade not found with id " + id));
-
-        trade.setStatus(status);
-
-        Trade saved = tradeRepo.save(trade);
-
-        events.publish(new TradeEvent(UUID.randomUUID(), saved.getTradeRef(),
-                TradeEvent.EventType.TRADE_UPDATED, Instant.now(), actor, null, null));
-
-        return saved;
-    }
-
-
-
-
-
-    public void softDelete(
-            Long id,
-            String actor
-    ) {
-
-        Trade trade = tradeRepo.findById(id)
-                .orElseThrow(() -> new TradeNotFoundException("Trade not found with id " + id));
-
-        trade.softDelete();
-        tradeRepo.save(trade);
-
-        events.publish(new TradeEvent(UUID.randomUUID(), trade.getTradeRef(),
-                TradeEvent.EventType.TRADE_CANCELLED, Instant.now(), actor, null, null));
-    }
-
-
-
-
-
-    // TICKET-ADV062
-    @Transactional(readOnly = true)
-    public Trade getById(Long id) {
-
-
-        return tradeRepo.findById(id)
-
-                .orElseThrow(() ->
-                        new TradeNotFoundException(
-                                "Trade not found with id " + id
-                        )
-                );
-    }
-
-
-
-
-
-    @Transactional(readOnly = true)
     public Page<Trade> list(
             LocalDate from,
             LocalDate to,
@@ -219,23 +74,386 @@ public class TradeService {
     ) {
 
 
-        Specification<Trade> spec =
-                Specification
-                        .where(
-                            TradeSpecification.tradeDateBetween(from,to)
-                        )
-                        .and(
-                            TradeSpecification.hasStatus(status)
-                        )
-                        .and(
-                            TradeSpecification.forCounterparty(counterpartyId)
-                        );
+        if (from == null) {
+            from = LocalDate.of(2000,1,1);
+        }
 
 
-        return tradeRepo.findAll(
-                spec,
+        if (to == null) {
+            to = LocalDate.now();
+        }
+
+
+        return tradeRepository.findByFilters(
+                from,
+                to,
+                status,
+                counterpartyId,
                 pageable
         );
+
+    }
+
+
+
+
+
+    public Trade getById(Long id) {
+
+        return tradeRepository.findById(id)
+                .orElseThrow(
+                        () -> new RuntimeException(
+                                "Trade not found: " + id
+                        )
+                );
+    }
+
+
+
+
+
+    @Transactional
+    public Trade create(
+            TradeRequest request,
+            String actor
+    ) {
+
+
+        Trade trade = new Trade();
+
+
+        trade.setTradeRef(
+                request.tradeRef()
+        );
+
+
+        trade.setSide(
+                request.side()
+        );
+
+
+        trade.setQuantity(
+                request.quantity()
+        );
+
+
+        trade.setPrice(
+                request.price()
+        );
+
+
+        trade.setTradeDate(
+                request.tradeDate()
+        );
+
+
+        trade.setAssetClass(
+                "FX"
+        );
+
+
+        trade.setStatus(
+                "PENDING"
+        );
+
+
+
+        Instrument instrument =
+                instrumentRepository.findById(
+                        request.instrumentId()
+                )
+                .orElseThrow(
+                        () -> new RuntimeException(
+                                "Instrument not found"
+                        )
+                );
+
+
+
+        Counterparty counterparty =
+                counterpartyRepository.findById(
+                        request.counterpartyId()
+                )
+                .orElseThrow(
+                        () -> new RuntimeException(
+                                "Counterparty not found"
+                        )
+                );
+
+
+
+        trade.setInstrument(instrument);
+
+        trade.setCounterparty(counterparty);
+
+
+
+        Trade saved =
+                tradeRepository.save(trade);
+
+
+
+        publishCreated(saved, actor);
+
+
+
+        return saved;
+
+    }
+
+
+
+
+
+    @Transactional
+    public Trade update(
+            Long id,
+            TradeRequest request,
+            String actor
+    ) {
+
+
+        Trade trade = getById(id);
+
+
+        trade.setTradeRef(
+                request.tradeRef()
+        );
+
+
+        trade.setSide(
+                request.side()
+        );
+
+
+        trade.setQuantity(
+                request.quantity()
+        );
+
+
+        trade.setPrice(
+                request.price()
+        );
+
+
+        trade.setTradeDate(
+                request.tradeDate()
+        );
+
+
+        trade.setInstrument(
+                instrumentRepository.findById(
+                        request.instrumentId()
+                )
+                .orElseThrow(
+                        () -> new RuntimeException(
+                                "Instrument not found"
+                        )
+                )
+        );
+
+
+        trade.setCounterparty(
+                counterpartyRepository.findById(
+                        request.counterpartyId()
+                )
+                .orElseThrow(
+                        () -> new RuntimeException(
+                                "Counterparty not found"
+                        )
+                )
+        );
+
+
+
+        Trade saved =
+                tradeRepository.save(trade);
+
+
+
+        publishUpdated(saved, actor);
+
+
+
+        return saved;
+
+    }
+
+
+
+
+
+    @Transactional
+    public Trade updateStatus(
+            Long id,
+            String status,
+            String actor
+    ) {
+
+
+        Trade trade = getById(id);
+
+
+        trade.setStatus(status);
+
+
+        Trade saved =
+                tradeRepository.save(trade);
+
+
+        publishUpdated(saved, actor);
+
+
+        return saved;
+
+    }
+
+
+
+
+
+    @Transactional
+    public void softDelete(
+            Long id,
+            String actor
+    ) {
+
+
+        Trade trade = getById(id);
+
+
+        publishCancelled(
+                trade,
+                actor
+        );
+
+
+        trade.softDelete();
+
+
+        tradeRepository.save(trade);
+
+    }
+
+
+
+
+
+    private void publishCreated(
+            Trade trade,
+            String actor
+    ) {
+
+        try {
+
+            String after =
+                    objectMapper.writeValueAsString(trade);
+
+
+
+            TradeEvent event =
+                    TradeEvent.created(
+                            trade.getTradeRef(),
+                            after
+                    );
+
+
+            tradeEventProducer.publish(event);
+
+
+
+            log.info(
+                    "TRADE_CREATED published {}",
+                    trade.getTradeRef()
+            );
+
+
+        } catch(JsonProcessingException e) {
+
+            log.error(
+                    "Failed publishing create event",
+                    e
+            );
+
+        }
+
+    }
+
+
+
+
+
+    private void publishUpdated(
+            Trade trade,
+            String actor
+    ) {
+
+        try {
+
+            String after =
+                    objectMapper.writeValueAsString(trade);
+
+
+
+            TradeEvent event =
+                    TradeEvent.updated(
+                            trade.getTradeRef(),
+                            null,
+                            after
+                    );
+
+
+            tradeEventProducer.publish(event);
+
+
+
+        } catch(JsonProcessingException e) {
+
+            log.error(
+                    "Failed publishing update event",
+                    e
+            );
+
+        }
+
+    }
+
+
+
+
+
+    private void publishCancelled(
+            Trade trade,
+            String actor
+    ) {
+
+        try {
+
+            String before =
+                    objectMapper.writeValueAsString(trade);
+
+
+
+            TradeEvent event =
+                    TradeEvent.cancelled(
+                            trade.getTradeRef(),
+                            before
+                    );
+
+
+            tradeEventProducer.publish(event);
+
+
+
+        } catch(JsonProcessingException e) {
+
+            log.error(
+                    "Failed publishing cancel event",
+                    e
+            );
+
+        }
+
     }
 
 }

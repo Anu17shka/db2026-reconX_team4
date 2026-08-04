@@ -4,18 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * ============================================================================
- * TICKET-ADV130 — TradeEvent payload (Kafka envelope)
- *
- * WHAT:    Wire format for trade-events Kafka topic. eventId is the
- *          idempotency key; consumers deduplicate by it.
- * HOW:     Record — Jackson serialises automatically (component model
- *          = default). before/after are JSON strings (not objects) to keep
- *          the contract resilient to entity refactors.
- * WHY:     Including before+after on every event makes downstream consumers
- *          (audit, recon) self-contained — they don't have to fetch the
- *          current state from the DB.
- * ============================================================================
+ * Kafka payload for trade-events topic.
  */
 public record TradeEvent(
         UUID eventId,
@@ -26,7 +15,59 @@ public record TradeEvent(
         String before,
         String after
 ) {
+
     public enum EventType {
-        TRADE_CREATED, TRADE_UPDATED, TRADE_CANCELLED
+        TRADE_CREATED,
+        TRADE_UPDATED,
+        TRADE_CANCELLED
+    }
+
+
+    public static TradeEvent created(
+            String tradeRef,
+            String after
+    ) {
+        return new TradeEvent(
+                UUID.randomUUID(),
+                tradeRef,
+                EventType.TRADE_CREATED,
+                Instant.now(),
+                "system",
+                null,
+                after
+        );
+    }
+
+
+    public static TradeEvent updated(
+            String tradeRef,
+            String before,
+            String after
+    ) {
+        return new TradeEvent(
+                UUID.randomUUID(),
+                tradeRef,
+                EventType.TRADE_UPDATED,
+                Instant.now(),
+                "system",
+                before,
+                after
+        );
+    }
+
+
+    public static TradeEvent cancelled(
+            String tradeRef,
+            String before
+    ) {
+        return new TradeEvent(
+                UUID.randomUUID(),
+                tradeRef,
+                EventType.TRADE_CANCELLED,
+                Instant.now(),
+                "system",
+                before,
+                null
+        );
     }
 }
