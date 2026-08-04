@@ -1,62 +1,53 @@
 package com.dbtraining.reconx.kafka;
 
+
 import com.dbtraining.reconx.dto.TradeEvent;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import static com.dbtraining.reconx.kafka.KafkaTopicsConfig.TRADE_EVENTS;
+
 
 @Component
 public class TradeEventProducer {
 
+
     private static final Logger log =
             LoggerFactory.getLogger(TradeEventProducer.class);
 
-    private final KafkaTemplate<String, TradeEvent> template;
 
 
-    public TradeEventProducer(KafkaTemplate<String, TradeEvent> template) {
-        this.template = template;
+    private final KafkaTemplate<String,Object> kafkaTemplate;
+
+
+
+    public TradeEventProducer(
+            KafkaTemplate<String,Object> kafkaTemplate
+    ){
+        this.kafkaTemplate = kafkaTemplate;
     }
 
 
-    public void publish(TradeEvent event) {
 
-        log.debug(
-            "Publishing TradeEvent eventId={} ref={} type={}",
-            event.eventId(),
-            event.tradeRef(),
-            event.eventType()
+    public void publish(TradeEvent event){
+
+
+        kafkaTemplate.send(
+                KafkaTopicsConfig.TRADE_EVENTS,
+                event.tradeRef(),
+                event
         );
 
 
-        template.send(
-                TRADE_EVENTS,
-                event.tradeRef(),
-                event
-        ).whenComplete((result, ex) -> {
+        log.info(
+                "TradeEvent published partition topic={} tradeRef={}",
+                KafkaTopicsConfig.TRADE_EVENTS,
+                event.tradeRef()
+        );
 
-            if (ex != null) {
-
-                log.error(
-                    "Failed publishing TradeEvent eventId={} tradeRef={}",
-                    event.eventId(),
-                    event.tradeRef(),
-                    ex
-                );
-
-            } else {
-
-                log.info(
-                    "TradeEvent published partition={} offset={}",
-                    result.getRecordMetadata().partition(),
-                    result.getRecordMetadata().offset()
-                );
-
-            }
-
-        });
     }
+
 }
